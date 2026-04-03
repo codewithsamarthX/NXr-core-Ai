@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NXr Core | Neural Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&family=Orbitron:wght@400;700&display=swap');
+        
+        :root {
+            --bg-color: #050507;
+            --accent-blue: #3b82f6;
+            --neon-glow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color);
+            color: #f4f4f5;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+
+        /* Scanning Line Effect */
+        .scanline {
+            width: 100%; height: 2px;
+            background: rgba(59, 130, 246, 0.1);
+            position: absolute; top: 0; z-index: 100;
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+
+        /* Glitch Pulse for the Core */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); }
+        }
+        .core-pulse { animation: pulse-glow 3s infinite; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+
+        .glass { 
+            background: rgba(15, 15, 20, 0.7); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(59, 130, 246, 0.15); 
+        }
+    </style>
+</head>
+<body class="h-screen flex selection:bg-blue-500/30">
+
+    <div class="scanline"></div>
+    <div class="fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.05),transparent_70%)] pointer-events-none"></div>
+
+    <aside class="w-80 border-r border-blue-500/10 bg-black/40 p-6 hidden xl:flex flex-col z-20 backdrop-blur-xl">
+        <div class="flex items-center gap-3 mb-10 group cursor-pointer">
+            <div class="p-3 bg-blue-600/20 rounded-xl border border-blue-500/40 core-pulse">
+                <i data-lucide="atom" class="text-blue-400 w-6 h-6 animate-spin-slow"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-orbitron font-bold tracking-widest text-blue-400">NXr_CORE</h1>
+                <p class="text-[9px] text-zinc-500 font-mono tracking-tighter">NEURAL_VIRTUAL_OS // 2.4.0</p>
+            </div>
+        </div>
+
+        <div class="flex-1 space-y-6">
+            <section class="space-y-4">
+                <p class="text-[10px] uppercase tracking-[0.2em] text-blue-500/60 font-bold">Live Telemetry</p>
+                <div class="space-y-3 font-mono">
+                    <div class="text-[11px] space-y-1">
+                        <div class="flex justify-between text-zinc-400"><span>CPU_LOAD</span><span id="cpu-val">12%</span></div>
+                        <div class="w-full bg-zinc-900 h-1 rounded-full overflow-hidden">
+                            <div id="cpu-bar" class="bg-blue-500 h-full transition-all duration-500" style="width: 12%"></div>
+                        </div>
+                    </div>
+                    <div class="text-[11px] space-y-1">
+                        <div class="flex justify-between text-zinc-400"><span>MEM_SYNC</span><span id="mem-val">4.2GB</span></div>
+                        <div class="w-full bg-zinc-900 h-1 rounded-full overflow-hidden">
+                            <div id="mem-bar" class="bg-cyan-500 h-full transition-all duration-500" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div class="glass p-3 rounded-lg text-center cursor-pointer hover:bg-blue-500/10 transition-all border-blue-500/5">
+                    <i data-lucide="shield-check" class="w-4 h-4 mx-auto mb-2 text-blue-400"></i>
+                    <span class="text-[10px] block font-mono">ENCRYPT</span>
+                </div>
+                <div class="glass p-3 rounded-lg text-center cursor-pointer hover:bg-blue-500/10 transition-all border-blue-500/5">
+                    <i data-lucide="database" class="w-4 h-4 mx-auto mb-2 text-zinc-500"></i>
+                    <span class="text-[10px] block font-mono">MEMORY</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-zinc-800/50">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 overflow-hidden">
+                        <img src="https://api.dicebear.com/7.x/identicon/svg?seed=Jarvis" alt="Avatar">
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-black rounded-full"></div>
+                </div>
+                <div>
+                    <p class="text-xs font-bold">Samarth[Iris]</p>
+                    <p class="text-[9px] text-zinc-500 font-mono">LEVEL 4 ACCESS</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col relative">
+        <header class="h-14 border-b border-blue-500/10 flex items-center justify-between px-8 bg-black/20 backdrop-blur-md z-10">
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2 text-blue-400/80 text-[10px] font-mono tracking-widest">
+                    <span class="inline-block w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                    UPLINK_ESTABLISHED
+                </div>
+                <div class="hidden md:block h-4 w-[1px] bg-zinc-800"></div>
+                <div class="hidden md:flex gap-4 text-[10px] font-mono text-zinc-500">
+                    <span>LATENCY: 14ms</span>
+                    <span>LOC: 127.0.0.1</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 text-zinc-500">
+                <button class="text-zinc-500 hover:text-white"><i data-lucide="wifi" class="w-4 h-4"></i></button>
+                <button class="text-zinc-500 hover:text-white"><i data-lucide="shield" class="w-4 h-4 text-blue-500"></i></button>
+             </div>
+                <button class="text-zinc-500 hover:text-white"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                <button class="text-zinc-500 hover:text-white"><i data-lucide="bell" class="w-4 h-4"></i></button>
+            </div>
+        </header>
+
+        <div id="chat-container" class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar">
+            <div class="max-w-4xl mx-auto space-y-8" id="chat-feed">
+                <div class="border-y border-blue-500/10 py-10 text-center space-y-4">
+                    <h2 class="font-orbitron text-2xl tracking-[0.5em] text-white">READY FOR INPUT</h2>
+                    <p class="text-zinc-500 font-mono text-xs uppercase tracking-widest">Neural Link Status: <span class="text-blue-400">Syncing...</span></p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="p-6 bg-gradient-to-t from-black to-transparent">
+            <div class="max-w-4xl mx-auto relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-10 group-focus-within:opacity-30 transition duration-500"></div>
+                
+                <div class="relative flex items-center gap-3 bg-zinc-950 border border-blue-500/20 p-3 rounded-2xl shadow-2xl">
+                    <div class="flex gap-2 px-2">
+                        <button class="text-zinc-600 hover:text-blue-400"><i data-lucide="plus-circle" class="w-5 h-5"></i></button>
+                        <button class="text-zinc-600 hover:text-blue-400"><i data-lucide="mic" class="w-5 h-5"></i></button>
+                    </div>
+                    
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="EXECUTE COMMAND..." 
+                        class="flex-1 bg-transparent border-none outline-none text-blue-100 px-2 h-10 placeholder:text-zinc-700 font-mono text-sm tracking-widest"
+                    >
+                    
+                    <button id="send-btn" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-xl transition-all font-orbitron text-xs tracking-tighter flex items-center gap-2 group">
+                        RUN
+                        <i data-lucide="chevron-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        const chatFeed = document.getElementById('chat-feed');
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Simulation: Telemetry Updates
+        setInterval(() => {
+            const cpu = Math.floor(Math.random() * 30) + 10;
+            const mem = Math.floor(Math.random() * 20) + 40;
+            document.getElementById('cpu-val').innerText = `${cpu}%`;
+            document.getElementById('cpu-bar').style.width = `${cpu}%`;
+            document.getElementById('mem-bar').style.width = `${mem}%`;
+        }, 3000);
+
+        function createMessage(text, sender, isError = false) {
+            const div = document.createElement('div');
+            div.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-4 duration-300`;
+            
+            if (sender === 'user') {
+                div.innerHTML = `
+                    <div class="max-w-[80%] glass p-4 rounded-2xl rounded-tr-none border-blue-500/30">
+                        <p class="text-sm font-mono text-blue-100">${text}</p>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = `
+                    <div class="max-w-[85%] flex gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
+                            <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
+                        </div>
+                        <div class="glass p-5 rounded-2xl rounded-tl-none border-zinc-800">
+                            <p class="text-xs font-mono text-zinc-500 mb-2 underline decoration-blue-500/30">CORE_OUT >></p>
+                            <p class="text-sm leading-relaxed text-zinc-200">${text}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            return div;
+        }
+
+        async function handleSend() {
+            const msg = userInput.value.trim();
+            if (!msg) return;
+
+            chatFeed.appendChild(createMessage(msg, 'user'));
+            userInput.value = '';
+            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+
+            // Simulate Jarvis "Thinking"
+            const loader = document.createElement('div');
+            loader.className = "flex gap-2 p-4 text-blue-500 font-mono text-[10px] animate-pulse";
+            loader.innerHTML = `[COMPUTING_TRAJECTORY...]`;
+            chatFeed.appendChild(loader);
+
+            setTimeout(() => {
+                loader.remove();
+                chatFeed.appendChild(createMessage("Neural link confirmed. Analyzing request parameters. How shall we proceed, Administrator?", 'bot'));
+                lucide.createIcons();
+                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+            }, 1000);
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSend(); });
+    </script>
+</body>
+</html>
