@@ -180,6 +180,34 @@
             border: 1px solid rgba(59, 130, 246, 0.1);
         }
 
+        /* File Upload Animation */
+        @keyframes file-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .file-uploading {
+            animation: file-pulse 2s infinite;
+        }
+
+        /* File Info Display */
+        .file-info {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(15, 15, 20, 0.95);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: none;
+            z-index: 50;
+        }
+        .file-info.active {
+            display: block;
+        }
+
         @keyframes spin-slow {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
@@ -307,6 +335,10 @@
                     <div class="flex gap-2 px-2">
                         <button id="command-history-btn" class="text-zinc-600 hover:text-blue-400"><i data-lucide="terminal" class="w-5 h-5"></i></button>
                         <button id="voice-btn" class="text-zinc-600 hover:text-blue-400"><i data-lucide="mic" class="w-5 h-5"></i></button>
+                        <button id="file-btn" class="text-zinc-600 hover:text-blue-400 relative">
+                            <i data-lucide="paperclip" class="w-5 h-5"></i>
+                            <input type="file" id="file-input" class="absolute inset-0 opacity-0 cursor-pointer" multiple>
+                        </button>
                     </div>
                     
                     <div class="relative flex-1">
@@ -319,6 +351,15 @@
                         <div id="command-suggestion" class="command-suggestion">
                             <div class="text-xs font-mono text-zinc-400">Suggested commands:</div>
                             <div id="suggestion-list" class="mt-2 space-y-1"></div>
+                        </div>
+                        <div id="file-info" class="file-info">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-mono text-blue-400">FILE UPLOAD READY</span>
+                                <button id="clear-files" class="text-zinc-500 hover:text-red-400">
+                                    <i data-lucide="x" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                            <div id="file-list" class="space-y-1 text-xs font-mono text-zinc-300"></div>
                         </div>
                     </div>
                     
@@ -368,11 +409,17 @@
         const soundToggle = document.getElementById('sound-toggle');
         const neuralCanvas = document.getElementById('neural-canvas');
         const ctx = neuralCanvas.getContext('2d');
+        const fileBtn = document.getElementById('file-btn');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const fileList = document.getElementById('file-list');
+        const clearFiles = document.getElementById('clear-files');
 
         // Command history
         let commandHistoryArray = [];
         let isVoiceActive = false;
         let soundEnabled = true;
+        let selectedFiles = [];
 
         // Neural network visualization
         function initNeuralNetwork() {
@@ -528,6 +575,66 @@
             }
         });
 
+        // File upload handling
+        fileInput.addEventListener('change', (e) => {
+            selectedFiles = Array.from(e.target.files);
+            
+            if (selectedFiles.length > 0) {
+                fileList.innerHTML = '';
+                let totalSize = 0;
+                
+                selectedFiles.forEach((file, index) => {
+                    totalSize += file.size;
+                    const fileDiv = document.createElement('div');
+                    fileDiv.className = 'flex items-center justify-between p-2 bg-zinc-800/50 rounded';
+                    fileDiv.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="file" class="w-3 h-3 text-blue-400"></i>
+                            <span class="truncate max-w-[200px]">${file.name}</span>
+                        </div>
+                        <span class="text-zinc-500">${formatFileSize(file.size)}</span>
+                    `;
+                    fileList.appendChild(fileDiv);
+                });
+                
+                // Add total size info
+                const totalDiv = document.createElement('div');
+                totalDiv.className = 'mt-2 pt-2 border-t border-zinc-700 flex justify-between text-xs';
+                totalDiv.innerHTML = `
+                    <span class="text-zinc-400">Total: ${selectedFiles.length} file(s)</span>
+                    <span class="text-blue-400">${formatFileSize(totalSize)}</span>
+                `;
+                fileList.appendChild(totalDiv);
+                
+                fileInfo.classList.add('active');
+                fileBtn.classList.add('text-blue-400', 'file-uploading');
+                
+                // Add file info to chat
+                const fileMessage = `📎 File(s) ready for upload: ${selectedFiles.map(f => f.name).join(', ')} (Total: ${formatFileSize(totalSize)})`;
+                chatFeed.appendChild(createMessage(fileMessage, 'user'));
+                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+            }
+            
+            lucide.createIcons();
+        });
+
+        // Clear files
+        clearFiles.addEventListener('click', () => {
+            selectedFiles = [];
+            fileInput.value = '';
+            fileInfo.classList.remove('active');
+            fileBtn.classList.remove('text-blue-400', 'file-uploading');
+        });
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
         // Command history toggle
         commandHistoryBtn.addEventListener('click', () => {
             commandHistory.classList.toggle('active');
@@ -555,7 +662,7 @@
             'optimize': 'Optimizing neural pathways... Recalibrating synaptic connections. Processing speed increased by 23.7%. Energy consumption reduced by 12.4%.',
             'connect': 'Establishing secure connection... Authentication successful. Link established with Server-Alpha-7. Data transfer rate: 4.2TB/s.',
             'status': 'System Status: OPTIMAL\nNeural Link: 99.8% stable\nSecurity: MAXIMUM ENCRYPTION\nProcessing: QUANTUM MODE\nUptime: 14 days, 7 hours, 32 minutes',
-            'help': 'Available commands:\n- scan: Scan network for vulnerabilities\n- encrypt: Encrypt data stream\n- analyze: Analyze system performance\n- optimize: Optimize neural pathways\n- connect: Establish new connection\n- status: Display system status\n- help: Display this help message'
+            'help': 'Available commands:\n- scan: Scan network for vulnerabilities\n- encrypt: Encrypt data stream\n- analyze: Analyze system performance\n- optimize: Optimize neural pathways\n- connect: Establish new connection\n- status: Display system status\n- help: Display this help message\n\nFile Operations:\n- Click the paperclip icon to upload files\n- Files will be processed with quantum encryption'
         };
 
         function createMessage(text, sender, isError = false) {
@@ -604,58 +711,87 @@
 
         async function handleSend() {
             const msg = userInput.value.trim();
-            if (!msg) return;
+            if (!msg && selectedFiles.length === 0) return;
 
-            // Add to command history
-            commandHistoryArray.unshift(msg);
-            if (commandHistoryArray.length > 10) commandHistoryArray.pop();
-            
-            // Update command history display
-            historyList.innerHTML = '';
-            commandHistoryArray.forEach(cmd => {
-                const div = document.createElement('div');
-                div.className = 'cursor-pointer hover:text-blue-400';
-                div.textContent = cmd;
-                div.addEventListener('click', () => {
-                    userInput.value = cmd;
-                    commandHistory.classList.remove('active');
-                    userInput.focus();
-                });
-                historyList.appendChild(div);
-            });
-
-            chatFeed.appendChild(createMessage(msg, 'user'));
-            userInput.value = '';
-            commandSuggestion.classList.remove('active');
-            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-
-            // Simulate Jarvis "Thinking"
-            const loader = createTypingIndicator();
-            chatFeed.appendChild(loader);
-            lucide.createIcons();
-
-            setTimeout(() => {
-                loader.remove();
-                
-                // Process command
-                const command = msg.toLowerCase().split(' ')[0];
-                let responseText = responses[command] || `Command "${command}" not recognized. Type "help" for available commands.`;
-                
-                // Add some randomness to make responses feel more dynamic
-                if (Math.random() > 0.7 && command !== 'help') {
-                    responseText += `\n\nAdditional data: Neural efficiency increased by ${Math.floor(Math.random() * 10 + 5)}%. Quantum processing threads optimized.`;
-                }
-                
-                chatFeed.appendChild(createMessage(responseText, 'bot'));
+            // Handle file upload
+            if (selectedFiles.length > 0) {
+                const loader = createTypingIndicator();
+                chatFeed.appendChild(loader);
                 lucide.createIcons();
-                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+
+                setTimeout(() => {
+                    loader.remove();
+                    
+                    const fileNames = selectedFiles.map(f => f.name).join(', ');
+                    const totalSize = selectedFiles.reduce((acc, f) => acc + f.size, 0);
+                    
+                    const response = `📡 FILE UPLOAD COMPLETE\n\nFiles processed: ${selectedFiles.length}\nTotal size: ${formatFileSize(totalSize)}\nEncryption: Quantum-256\nStatus: Secured in neural storage\n\nFiles: ${fileNames}\n\nAccess command: "retrieve ${fileNames.split(',')[0]}" to download`;
+                    
+                    chatFeed.appendChild(createMessage(response, 'bot'));
+                    lucide.createIcons();
+                    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+                    
+                    // Clear files after upload
+                    selectedFiles = [];
+                    fileInput.value = '';
+                    fileInfo.classList.remove('active');
+                    fileBtn.classList.remove('text-blue-400', 'file-uploading');
+                }, 2000);
+            }
+
+            // Handle text message
+            if (msg) {
+                // Add to command history
+                commandHistoryArray.unshift(msg);
+                if (commandHistoryArray.length > 10) commandHistoryArray.pop();
                 
-                // Play sound effect if enabled
-                if (soundEnabled) {
-                    // In a real implementation, you would play an actual sound here
-                    console.log('Playing notification sound');
-                }
-            }, 1500);
+                // Update command history display
+                historyList.innerHTML = '';
+                commandHistoryArray.forEach(cmd => {
+                    const div = document.createElement('div');
+                    div.className = 'cursor-pointer hover:text-blue-400';
+                    div.textContent = cmd;
+                    div.addEventListener('click', () => {
+                        userInput.value = cmd;
+                        commandHistory.classList.remove('active');
+                        userInput.focus();
+                    });
+                    historyList.appendChild(div);
+                });
+
+                chatFeed.appendChild(createMessage(msg, 'user'));
+                userInput.value = '';
+                commandSuggestion.classList.remove('active');
+                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+
+                // Simulate Jarvis "Thinking"
+                const loader = createTypingIndicator();
+                chatFeed.appendChild(loader);
+                lucide.createIcons();
+
+                setTimeout(() => {
+                    loader.remove();
+                    
+                    // Process command
+                    const command = msg.toLowerCase().split(' ')[0];
+                    let responseText = responses[command] || `Command "${command}" not recognized. Type "help" for available commands.`;
+                    
+                    // Add some randomness to make responses feel more dynamic
+                    if (Math.random() > 0.7 && command !== 'help') {
+                        responseText += `\n\nAdditional data: Neural efficiency increased by ${Math.floor(Math.random() * 10 + 5)}%. Quantum processing threads optimized.`;
+                    }
+                    
+                    chatFeed.appendChild(createMessage(responseText, 'bot'));
+                    lucide.createIcons();
+                    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+                    
+                    // Play sound effect if enabled
+                    if (soundEnabled) {
+                        // In a real implementation, you would play an actual sound here
+                        console.log('Playing notification sound');
+                    }
+                }, 1500);
+            }
         }
 
         sendBtn.addEventListener('click', handleSend);
