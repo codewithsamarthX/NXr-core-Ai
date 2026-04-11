@@ -240,6 +240,55 @@
                 transition-duration: 0.01ms !important;
             }
         }
+
+        /* Smooth rotation */
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+    animation: spin-slow 6s linear infinite;
+}
+
+/* Reverse rotation */
+@keyframes spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+.animate-spin-reverse {
+    animation: spin-reverse 10s linear infinite;
+}
+
+/* Energy pulse ring */
+@keyframes ping-slow {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    70% { transform: scale(1.4); opacity: 0; }
+    100% { opacity: 0; }
+}
+.animate-ping-slow {
+    animation: ping-slow 2.5s infinite;
+}
+
+/* Core glow */
+@keyframes core-glow {
+    0% { box-shadow: 0 0 5px rgba(59,130,246,0.3); }
+    50% { box-shadow: 0 0 25px rgba(59,130,246,0.9); }
+    100% { box-shadow: 0 0 5px rgba(59,130,246,0.3); }
+}
+.core-glow {
+    animation: core-glow 2s infinite ease-in-out;
+}
+
+/* Subtle AI flicker */
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+    52% { opacity: 1; }
+    70% { opacity: 0.9; }
+}
+.animate-flicker {
+    animation: flicker 2.5s infinite;
+}
     </style>
 </head>
 <body class="h-screen flex selection:bg-blue-500/30">
@@ -254,7 +303,31 @@
     <aside class="sidebar-panel w-80 border-r border-cyan-500/20 bg-black/40 backdrop-blur-2xl p-6 hidden xl:flex flex-col z-20 glass" id="sidebar">
         <div class="flex items-center gap-3 mb-8 group cursor-pointer">
             <div class="p-3 bg-blue-600/20 rounded-xl border border-blue-500/40 core-pulse">
-                <i data-lucide="atom" class="text-blue-400 w-6 h-6 animate-spin-slow"></i>
+
+
+               <div class="relative w-14 h-14 flex items-center justify-center">
+
+    <!-- Outer Ring (slow) -->
+    <div class="absolute inset-0 flex items-center justify-center animate-spin-slow">
+        <i data-lucide="orbit" class="w-12 h-12 text-cyan-400 opacity-60"></i>
+    </div>
+
+    <!-- Inner Ring (reverse) -->
+    <div class="absolute inset-0 flex items-center justify-center animate-spin-reverse">
+        <i data-lucide="circle-dashed" class="w-9 h-9 text-blue-500/40"></i>
+    </div>
+
+    <!-- Energy Pulse Ring -->
+    <div class="absolute w-10 h-10 border border-blue-400/20 rounded-full animate-ping-slow"></div>
+
+    <!-- Core Glow -->
+    <div class="absolute w-6 h-6 rounded-full bg-blue-500/20 blur-md core-glow"></div>
+
+    <!-- Center Core -->
+    <i data-lucide="cpu" class="w-5 h-5 text-blue-400 relative z-10 animate-flicker"></i>
+
+</div>
+
             </div>
             <div>
                 <h1 class="text-xl font-orbitron font-bold tracking-widest bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">NXr CORE</h1>
@@ -375,7 +448,17 @@
             <div class="max-w-4xl mx-auto space-y-6" id="chat-feed">
                 <div id="welcome-banner" class="border-y border-blue-500/10 py-12 text-center space-y-5">
                     <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 core-pulse mb-2">
-                        <i data-lucide="brain" class="w-8 h-8 text-blue-400"></i>
+                        <div class="relative w-10 h-10 flex items-center justify-center">
+
+    <!-- Rotating ring -->
+    <div class="absolute inset-0 animate-spin-slow flex items-center justify-center">
+        <i data-lucide="circle-dashed" class="w-10 h-10 text-blue-500/30"></i>
+    </div>
+
+    <!-- Center -->
+    <i data-lucide="hexagon" class="w-8 h-8 text-blue-400 relative z-10"></i>
+
+</div>
                     </div>
                     <h2 class="font-orbitron text-2xl md:text-3xl tracking-[0.4em] text-white">> NXR_CORE :: ONLINE</h2>
                     <p class="text-zinc-500 font-mono text-xs uppercase tracking-widest max-w-md mx-auto leading-relaxed">
