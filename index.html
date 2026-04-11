@@ -7,8 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&family=Orbitron:wght@400;700&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&family=Orbitron:wght@400;500;600;700&display=swap');
+
         :root {
             --bg-color: #050507;
             --accent-blue: #3b82f6;
@@ -17,8 +17,10 @@
             --hologram-color: rgba(59, 130, 246, 0.15);
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: #f4f4f5;
             margin: 0;
@@ -28,36 +30,27 @@
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
 
-        /* Scanning Line Effect */
         .scanline {
             width: 100%; height: 2px;
-            background: rgba(59, 130, 246, 0.1);
-            position: absolute; top: 0; z-index: 100;
+            background: linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.08) 30%, rgba(59,130,246,0.15) 50%, rgba(59,130,246,0.08) 70%, transparent 100%);
+            position: fixed; top: 0; left: 0; z-index: 100;
             pointer-events: none;
             animation: scan 8s linear infinite;
         }
 
         @keyframes scan {
-            0% { top: 0%; }
+            0% { top: -2px; }
             100% { top: 100%; }
         }
 
-        /* Glitch Pulse for the Core */
         @keyframes pulse-glow {
-            0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); }
-            50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.5); }
-            100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); }
+            0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2), inset 0 0 5px rgba(59,130,246,0.05); }
+            50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.5), inset 0 0 10px rgba(59,130,246,0.1); }
+            100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2), inset 0 0 5px rgba(59,130,246,0.05); }
         }
         .core-pulse { animation: pulse-glow 3s infinite; }
 
-        /* Hologram Effect */
-        @keyframes hologram-flicker {
-            0% { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.85; }
-        }
-        .hologram { 
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.05));
+        .hologram {
             position: relative;
             overflow: hidden;
         }
@@ -66,163 +59,199 @@
             position: absolute;
             top: 0; left: -100%;
             width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
             animation: hologram-scan 4s infinite;
+            pointer-events: none;
         }
         @keyframes hologram-scan {
             0% { left: -100%; }
             100% { left: 100%; }
         }
 
-        /* Neural Network Animation */
-        .neural-node {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(59, 130, 246, 0.7);
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-        }
-        .neural-connection {
-            position: absolute;
-            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
-            height: 1px;
-            transform-origin: left center;
-            animation: pulse-connection 3s infinite;
-        }
-        @keyframes pulse-connection {
-            0%, 100% { opacity: 0.2; }
-            50% { opacity: 0.7; }
-        }
-
-        /* Voice Animation */
         .voice-bar {
-            height: 20px;
             width: 3px;
             background: rgba(59, 130, 246, 0.7);
             margin: 0 2px;
             border-radius: 3px;
             animation: voice-wave 1s infinite ease-in-out;
         }
-        .voice-bar:nth-child(2) { animation-delay: 0.1s; }
-        .voice-bar:nth-child(3) { animation-delay: 0.2s; }
-        .voice-bar:nth-child(4) { animation-delay: 0.3s; }
-        .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+        .voice-bar:nth-child(1) { animation-delay: 0s; }
+        .voice-bar:nth-child(2) { animation-delay: 0.12s; }
+        .voice-bar:nth-child(3) { animation-delay: 0.24s; }
+        .voice-bar:nth-child(4) { animation-delay: 0.36s; }
+        .voice-bar:nth-child(5) { animation-delay: 0.48s; }
         @keyframes voice-wave {
             0%, 100% { height: 5px; }
-            50% { height: 20px; }
+            50% { height: 22px; }
         }
 
-        /* Command History */
         .command-history {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-out;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .command-history.active {
-            max-height: 300px;
-        }
+        .command-history.active { max-height: 280px; overflow-y: auto; }
 
-        /* Typing Animation */
         .typing-indicator span {
             display: inline-block;
-            width: 8px;
-            height: 8px;
+            width: 7px; height: 7px;
             border-radius: 50%;
             background: #3b82f6;
-            margin: 0 2px;
-            animation: typing 1.4s infinite;
+            margin: 0 3px;
+            animation: typing-bounce 1.4s infinite;
         }
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-            }
-            30% {
-                transform: translateY(-10px);
-            }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing-bounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-10px); opacity: 1; }
         }
 
         .custom-scrollbar::-webkit-scrollbar { width: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.5); }
 
-        .glass { 
-            background: rgba(15, 15, 20, 0.7); 
-            backdrop-filter: blur(15px); 
-            border: 1px solid rgba(59, 130, 246, 0.15); 
+        .glass {
+            background: rgba(15, 15, 20, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(59, 130, 246, 0.15);
         }
 
-        /* Advanced command input */
         .command-suggestion {
             position: absolute;
             bottom: 100%;
-            left: 0;
-            right: 0;
-            background: rgba(15, 15, 20, 0.9);
+            left: 0; right: 0;
+            background: rgba(10, 10, 15, 0.95);
             border: 1px solid rgba(59, 130, 246, 0.2);
             border-radius: 8px;
             padding: 8px;
             margin-bottom: 8px;
             display: none;
             z-index: 50;
+            backdrop-filter: blur(20px);
         }
-        .command-suggestion.active {
-            display: block;
-        }
+        .command-suggestion.active { display: block; }
 
         .glass-panel-solid {
             background: rgba(15, 15, 20, 0.5);
             border: 1px solid rgba(59, 130, 246, 0.1);
         }
 
-        /* File Upload Animation */
         @keyframes file-pulse {
             0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
             70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
             100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
-        .file-uploading {
-            animation: file-pulse 2s infinite;
-        }
+        .file-uploading { animation: file-pulse 2s infinite; }
 
-        /* File Info Display */
         .file-info {
             position: absolute;
             bottom: 100%;
-            left: 0;
-            right: 0;
-            background: rgba(15, 15, 20, 0.95);
+            left: 0; right: 0;
+            background: rgba(10, 10, 15, 0.95);
             border: 1px solid rgba(59, 130, 246, 0.3);
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 8px;
             display: none;
             z-index: 50;
+            backdrop-filter: blur(20px);
         }
-        .file-info.active {
-            display: block;
-        }
+        .file-info.active { display: block; }
 
         @keyframes spin-slow {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        .animate-spin-slow {
-            animation: spin-slow 8s linear infinite;
+        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
+
+        @keyframes msg-enter {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .msg-animate {
+            animation: msg-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes status-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .status-blink { animation: status-blink 2s ease-in-out infinite; }
+
+        .input-glow-ring {
+            position: absolute;
+            inset: -1px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(6,182,212,0.2), rgba(59,130,246,0.1));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .input-wrapper:focus-within .input-glow-ring {
+            opacity: 1;
+        }
+
+        .neural-module {
+            transition: all 0.3s ease;
+        }
+        .neural-module:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            box-shadow: 0 0 20px rgba(59,130,246,0.1), inset 0 0 20px rgba(59,130,246,0.05);
+            transform: translateY(-1px);
+        }
+
+        @keyframes val-flash {
+            0% { color: #fff; }
+            100% { color: inherit; }
+        }
+        .val-flash { animation: val-flash 0.6s ease-out; }
+
+        @media (max-width: 1279px) {
+            .sidebar-mobile-toggle { display: flex !important; }
+            .sidebar-panel {
+                position: fixed;
+                left: 0; top: 0; bottom: 0;
+                z-index: 200;
+                transform: translateX(-100%);
+                transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .sidebar-panel.open { transform: translateX(0); }
+            .sidebar-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.6);
+                z-index: 199;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s;
+            }
+            .sidebar-overlay.visible {
+                opacity: 1;
+                pointer-events: all;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body class="h-screen flex selection:bg-blue-500/30">
 
     <div class="scanline"></div>
-    <div class="fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.05),transparent_70%)] pointer-events-none"></div>
 
-    <aside class="w-80 border-r border-cyan-500/20 bg-black/30 backdrop-blur-2xl p-6 hidden xl:flex flex-col z-20 glass">
+    <div class="fixed inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(59,130,246,0.04),transparent_70%)] pointer-events-none"></div>
+    <div class="fixed inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(6,182,212,0.02),transparent_50%)] pointer-events-none"></div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar-panel w-80 border-r border-cyan-500/20 bg-black/40 backdrop-blur-2xl p-6 hidden xl:flex flex-col z-20 glass" id="sidebar">
         <div class="flex items-center gap-3 mb-8 group cursor-pointer">
             <div class="p-3 bg-blue-600/20 rounded-xl border border-blue-500/40 core-pulse">
                 <i data-lucide="atom" class="text-blue-400 w-6 h-6 animate-spin-slow"></i>
@@ -233,45 +262,52 @@
             </div>
         </div>
 
-        <div class="space-y-6 flex-1">
-            <!-- Live Telemetry with neural network visualization -->
+        <div class="space-y-6 flex-1 overflow-y-auto custom-scrollbar">
             <div class="space-y-2">
                 <div class="flex justify-between items-center">
                     <p class="text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold">Neural Metrics</p>
-                    <span class="text-[8px] text-zinc-500 font-mono">REALTIME</span>
+                    <span class="text-[8px] text-zinc-500 font-mono status-blink">LIVE</span>
                 </div>
-                <canvas id="neural-canvas" height="80" class="w-full bg-black/40 rounded-lg border border-cyan-500/20 p-1"></canvas>
+                <canvas id="neural-canvas" height="80" class="w-full bg-black/50 rounded-lg border border-cyan-500/20"></canvas>
                 <div class="grid grid-cols-2 gap-2 mt-3">
-                    <div class="glass-panel-solid rounded-md p-2 text-center">
-                        <p class="text-[9px] text-zinc-400">SYNAPSE LOAD</p>
-                        <p class="text-sm font-mono text-cyan-400 font-bold"><span id="cpu-val">14</span>%</p>
+                    <div class="glass-panel-solid rounded-md p-2.5 text-center">
+                        <p class="text-[9px] text-zinc-500 tracking-wider">SYNAPSE LOAD</p>
+                        <p class="text-sm font-mono text-cyan-400 font-bold mt-0.5"><span id="cpu-val">14</span>%</p>
                     </div>
-                    <div class="glass-panel-solid rounded-md p-2 text-center">
-                        <p class="text-[9px] text-zinc-400">Q-BIT FLUX</p>
-                        <p class="text-sm font-mono text-blue-400 font-bold"><span id="mem-val">78</span>%</p>
+                    <div class="glass-panel-solid rounded-md p-2.5 text-center">
+                        <p class="text-[9px] text-zinc-500 tracking-wider">Q-BIT FLUX</p>
+                        <p class="text-sm font-mono text-blue-400 font-bold mt-0.5"><span id="mem-val">78</span>%</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Command shortcuts / neural modules -->
             <div class="space-y-3">
-                <p class="text-[9px] text-cyan-500/70 tracking-widest">⚡ NEURAL MODULES</p>
+                <p class="text-[9px] text-cyan-500/70 tracking-widest">NEURAL MODULES</p>
                 <div class="grid grid-cols-2 gap-2">
-                    <div class="glass p-2 rounded-lg text-center cursor-pointer hover:border-cyan-400 transition-all group">
-                        <i data-lucide="zap" class="w-4 h-4 mx-auto mb-1 text-cyan-400"></i>
-                        <span class="text-[9px] block font-mono">SYNAPSE BOOST</span>
+                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer">
+                        <i data-lucide="zap" class="w-4 h-4 mx-auto mb-1.5 text-cyan-400"></i>
+                        <span class="text-[9px] block font-mono text-zinc-400">SYNAPSE BOOST</span>
                     </div>
-                    <div class="glass p-2 rounded-lg text-center cursor-pointer hover:border-cyan-400 transition-all group">
-                        <i data-lucide="shield" class="w-4 h-4 mx-auto mb-1 text-blue-400"></i>
-                        <span class="text-[9px] block font-mono">QUANTUM LOCK</span>
+                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer">
+                        <i data-lucide="shield" class="w-4 h-4 mx-auto mb-1.5 text-blue-400"></i>
+                        <span class="text-[9px] block font-mono text-zinc-400">QUANTUM LOCK</span>
                     </div>
-                    <div class="glass p-2 rounded-lg text-center cursor-pointer hover:border-cyan-400 transition-all group">
-                        <i data-lucide="database" class="w-4 h-4 mx-auto mb-1 text-zinc-400"></i>
-                        <span class="text-[9px] block font-mono">MEMORY CORE</span>
+                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer">
+                        <i data-lucide="database" class="w-4 h-4 mx-auto mb-1.5 text-zinc-400"></i>
+                        <span class="text-[9px] block font-mono text-zinc-400">MEMORY CORE</span>
                     </div>
-                    <div class="glass p-2 rounded-lg text-center cursor-pointer hover:border-cyan-400 transition-all group">
-                        <i data-lucide="cpu" class="w-4 h-4 mx-auto mb-1 text-purple-400"></i>
-                        <span class="text-[9px] block font-mono">NEURO-LINK</span>
+                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer">
+                        <i data-lucide="cpu" class="w-4 h-4 mx-auto mb-1.5 text-purple-400"></i>
+                        <span class="text-[9px] block font-mono text-zinc-400">NEURO-LINK</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <p class="text-[9px] text-cyan-500/70 tracking-widest">RECENT ACTIVITY</p>
+                <div class="space-y-1.5" id="sidebar-history">
+                    <div class="text-[10px] font-mono text-zinc-600 py-1 px-2 rounded border border-transparent hover:border-zinc-800 hover:text-zinc-400 transition-colors cursor-pointer">
+                        <span class="text-zinc-700 mr-2">&gt;</span>system initialized
                     </div>
                 </div>
             </div>
@@ -281,112 +317,153 @@
             <div class="flex items-center gap-3">
                 <div class="relative">
                     <div class="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 overflow-hidden">
-                        <img src="https://api.dicebear.com/7.x/identicon/svg?seed=Jarvis" alt="Avatar">
+                        <img src="https://api.dicebear.com/7.x/identicon/svg?seed=Jarvis" alt="Avatar" class="w-full h-full">
                     </div>
-                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-black rounded-full"></div>
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-[#0a0a0f] rounded-full"></div>
                 </div>
-                <div>
-                    <p class="text-xs font-bold">Samarth[Iris]</p>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold truncate">Samarth[Iris]</p>
                     <p class="text-[9px] text-zinc-500 font-mono">LEVEL 5 ACCESS</p>
                 </div>
+                <button class="text-zinc-600 hover:text-zinc-400 transition-colors" aria-label="Settings">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
             </div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col relative">
-        <header class="h-14 border-b border-blue-500/10 flex items-center justify-between px-8 bg-black/20 backdrop-blur-md z-10">
-            <div class="flex items-center gap-6">
+    <main class="flex-1 flex flex-col relative min-w-0">
+        <header class="h-14 border-b border-blue-500/10 flex items-center justify-between px-6 lg:px-8 bg-black/30 backdrop-blur-md z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <button class="sidebar-mobile-toggle hidden text-zinc-400 hover:text-white transition-colors" id="menuToggle" aria-label="Toggle sidebar">
+                    <i data-lucide="panel-left" class="w-5 h-5"></i>
+                </button>
                 <div class="flex items-center gap-2 text-blue-400/80 text-[10px] font-mono tracking-widest">
-                    <span class="inline-block w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                    <span class="inline-block w-2 h-2 bg-blue-500 rounded-full status-blink"></span>
                     UPLINK_ESTABLISHED
                 </div>
-                <div class="hidden md:block h-4 w-[1px] bg-zinc-800"></div>
-                <div class="hidden md:flex gap-4 text-[10px] font-mono text-zinc-500">
-                    <span>LATENCY: 14ms</span>
+                <div class="hidden md:block h-4 w-px bg-zinc-800"></div>
+                <div class="hidden md:flex gap-4 text-[10px] font-mono text-zinc-600">
+                    <span>LATENCY: <span id="latency-val">14</span>ms</span>
                     <span>LOC: 127.0.0.1</span>
-                    <span>SECURITY: <span class="text-green-400">MAX</span></span>
+                    <span>SEC: <span class="text-emerald-500">MAX</span></span>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-4 text-zinc-500">
-                    <button id="sound-toggle" class="text-zinc-500 hover:text-white"><i data-lucide="volume-2" class="w-4 h-4"></i></button>
-                    <button class="text-zinc-500 hover:text-white"><i data-lucide="wifi" class="w-4 h-4"></i></button>
-                    <button class="text-zinc-500 hover:text-white"><i data-lucide="shield" class="w-4 h-4 text-blue-500"></i></button>
-                </div>
-                <button class="text-zinc-500 hover:text-white"><i data-lucide="settings" class="w-4 h-4"></i></button>
-                <button class="text-zinc-500 hover:text-white"><i data-lucide="bell" class="w-4 h-4"></i></button>
+            <div class="flex items-center gap-3">
+                <button id="sound-toggle" class="text-zinc-500 hover:text-white transition-colors p-1" aria-label="Toggle sound">
+                    <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+                <button class="text-zinc-500 hover:text-white transition-colors p-1" aria-label="Network">
+                    <i data-lucide="wifi" class="w-4 h-4"></i>
+                </button>
+                <button class="text-blue-500/70 hover:text-blue-400 transition-colors p-1" aria-label="Security">
+                    <i data-lucide="shield" class="w-4 h-4"></i>
+                </button>
+                <button id="clear-chat-btn" class="text-zinc-500 hover:text-red-400 transition-colors p-1" aria-label="Clear chat">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+                <button class="text-zinc-500 hover:text-white transition-colors p-1" aria-label="Settings">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
+                <button class="text-zinc-500 hover:text-white transition-colors p-1" aria-label="Notifications">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                </button>
             </div>
         </header>
 
         <div id="chat-container" class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar">
-            <div class="max-w-4xl mx-auto space-y-8" id="chat-feed">
-                <div class="border-y border-blue-500/10 py-10 text-center space-y-4">
-                    <h2 class="font-orbitron text-2xl tracking-[0.5em] text-white">NEURAL LINK ACTIVE</h2>
-                    <p class="text-zinc-500 font-mono text-xs uppercase tracking-widest">System Status: <span class="text-green-400">Optimal</span> | Processing: <span class="text-blue-400">Quantum</span></p>
+            <div class="max-w-4xl mx-auto space-y-6" id="chat-feed">
+                <div id="welcome-banner" class="border-y border-blue-500/10 py-12 text-center space-y-5">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 core-pulse mb-2">
+                        <i data-lucide="brain" class="w-8 h-8 text-blue-400"></i>
+                    </div>
+                    <h2 class="font-orbitron text-2xl md:text-3xl tracking-[0.4em] text-white">NEURAL LINK ACTIVE</h2>
+                    <p class="text-zinc-500 font-mono text-xs uppercase tracking-widest max-w-md mx-auto leading-relaxed">
+                        System Status: <span class="text-emerald-400">Optimal</span>
+                        <span class="mx-2 text-zinc-700">|</span>
+                        Processing: <span class="text-blue-400">Quantum</span>
+                        <span class="mx-2 text-zinc-700">|</span>
+                        Security: <span class="text-cyan-400">Maximum</span>
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-2 pt-2">
+                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 transition-all cursor-pointer" data-cmd="status">status</button>
+                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 transition-all cursor-pointer" data-cmd="scan">scan</button>
+                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 transition-all cursor-pointer" data-cmd="analyze">analyze</button>
+                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 transition-all cursor-pointer" data-cmd="help">help</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-                <footer class="p-6 bg-gradient-to-t from-black to-transparent">
-            <div class="max-w-4xl mx-auto relative group">
-                <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-md blur opacity-10 group-focus-within:opacity-30 transition duration-500"></div>
-                
-                <div class="relative flex items-center gap-3 bg-zinc-950 border border-blue-500/20 p-3 rounded-md shadow-2xl">
-                    <div class="flex gap-2 px-2">
-                        <button id="command-history-btn" class="text-zinc-600 hover:text-blue-400"><i data-lucide="terminal" class="w-5 h-5"></i></button>
-                        <button id="voice-btn" class="text-zinc-600 hover:text-blue-400"><i data-lucide="mic" class="w-5 h-5"></i></button>
-                        <button id="file-btn" class="text-zinc-600 hover:text-blue-400 relative">
-                            <i data-lucide="paperclip" class="w-5 h-5"></i>
-                            <input type="file" id="file-input" class="absolute inset-0 opacity-0 cursor-pointer" multiple>
+        <footer class="p-4 lg:p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent shrink-0">
+            <div class="max-w-4xl mx-auto">
+                <div id="voice-indicator" class="hidden mb-4 flex justify-center">
+                    <div class="glass px-5 py-2.5 rounded-full flex items-center gap-3">
+                        <div class="flex items-end h-6">
+                            <div class="voice-bar"></div>
+                            <div class="voice-bar"></div>
+                            <div class="voice-bar"></div>
+                            <div class="voice-bar"></div>
+                            <div class="voice-bar"></div>
+                        </div>
+                        <span class="text-xs font-mono text-blue-400 tracking-wider">Listening...</span>
+                    </div>
+                </div>
+
+                <div id="file-info" class="file-info mb-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-mono text-blue-400 tracking-wider">FILE UPLOAD READY</span>
+                        <button id="clear-files" class="text-zinc-500 hover:text-red-400 transition-colors p-1">
+                            <i data-lucide="x" class="w-3 h-3"></i>
                         </button>
                     </div>
-                    
-                    <div class="relative flex-1">
-                        <input 
-                            type="text" 
-                            id="user-input" 
-                            placeholder="Type your directive..." 
-                            class="w-full bg-transparent border-none outline-none text-blue-100 px-2 h-10 placeholder:text-zinc-700 font-mono text-sm tracking-widest"
-                        >
-                        <div id="command-suggestion" class="command-suggestion">
-                            <div class="text-xs font-mono text-zinc-400">Suggested commands:</div>
-                            <div id="suggestion-list" class="mt-2 space-y-1"></div>
+                    <div id="file-list" class="space-y-1 text-xs font-mono text-zinc-300"></div>
+                </div>
+
+                <div class="input-wrapper relative group">
+                    <div class="input-glow-ring"></div>
+                    <div class="relative flex items-center gap-2 bg-zinc-950/90 border border-blue-500/15 p-2.5 rounded-lg shadow-2xl">
+                        <div class="flex gap-1 px-1">
+                            <button id="command-history-btn" class="text-zinc-600 hover:text-blue-400 transition-colors p-1.5 rounded-md hover:bg-zinc-800/50" aria-label="Command history">
+                                <i data-lucide="terminal" class="w-4 h-4"></i>
+                            </button>
+                            <button id="voice-btn" class="text-zinc-600 hover:text-blue-400 transition-colors p-1.5 rounded-md hover:bg-zinc-800/50" aria-label="Voice input">
+                                <i data-lucide="mic" class="w-4 h-4"></i>
+                            </button>
+                            <button id="file-btn" class="text-zinc-600 hover:text-blue-400 transition-colors p-1.5 rounded-md hover:bg-zinc-800/50 relative" aria-label="Attach file">
+                                <i data-lucide="paperclip" class="w-4 h-4"></i>
+                                <input type="file" id="file-input" class="absolute inset-0 opacity-0 cursor-pointer" multiple>
+                            </button>
                         </div>
-                        <div id="file-info" class="file-info">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-mono text-blue-400">FILE UPLOAD READY</span>
-                                <button id="clear-files" class="text-zinc-500 hover:text-red-400">
-                                    <i data-lucide="x" class="w-3 h-3"></i>
-                                </button>
+
+                        <div class="relative flex-1">
+                            <input
+                                type="text"
+                                id="user-input"
+                                placeholder="Type your directive..."
+                                class="w-full bg-transparent border-none outline-none text-blue-100 px-2 h-9 placeholder:text-zinc-700 font-mono text-sm tracking-wider"
+                                autocomplete="off"
+                                spellcheck="false"
+                            >
+                            <div id="command-suggestion" class="command-suggestion">
+                                <div class="text-[10px] font-mono text-zinc-500 tracking-wider mb-2">SUGGESTED DIRECTIVES</div>
+                                <div id="suggestion-list" class="space-y-0.5"></div>
                             </div>
-                            <div id="file-list" class="space-y-1 text-xs font-mono text-zinc-300"></div>
                         </div>
+
+                        <button id="send-btn" class="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-5 py-2 rounded-md transition-all font-orbitron text-[11px] tracking-wider flex items-center gap-2 shrink-0 disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                            RUN
+                            <i data-lucide="chevrons-right" class="w-3.5 h-3.5"></i>
+                        </button>
                     </div>
-                    
-                    <button id="send-btn" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-md transition-all font-orbitron text-xs tracking-tighter flex items-center gap-2 group">
-                        Run
-                    <i data-lucide="chevrons-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i><i data-lucide="workflow" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
-                </div>
 
-                <!-- Command History -->
-                <div id="command-history" class="command-history mt-2 glass rounded-sm p-3">
-                    <div class="text-xs font-mono text-zinc-400 mb-2">Command History:</div>
-                    <div id="history-list" class="space-y-1 text-xs font-mono text-zinc-500"></div>
-                </div>
-
-                <!-- Voice Input Indicator -->
-                <div id="voice-indicator" class="hidden absolute bottom-full left-0 right-0 mb-4 flex justify-center">
-                    <div class="glass px-4 py-2 rounded-full flex items-center gap-2">
-                        <div class="flex gap-1">
-                            <div class="voice-bar"></div>
-                            <div class="voice-bar"></div>
-                            <div class="voice-bar"></div>
-                            <div class="voice-bar"></div>
-                            <div class="voice-bar"></div>
-                        </div>
-                        <span class="text-xs font-mono text-blue-400">Listening...</span>
+                    <div id="command-history" class="command-history mt-2 glass rounded-lg p-3">
+                        <div class="text-[10px] font-mono text-zinc-500 tracking-wider mb-2">COMMAND HISTORY</div>
+                        <div id="history-list" class="space-y-1 text-xs font-mono text-zinc-500"></div>
                     </div>
                 </div>
+
+                <p class="text-[9px] text-zinc-700 font-mono text-center mt-3 tracking-wider">NXr Core v3.0 — Quantum Neural Processing Engine</p>
             </div>
         </footer>
     </main>
@@ -411,122 +488,394 @@
         const fileBtn = document.getElementById('file-btn');
         const fileInput = document.getElementById('file-input');
         const fileInfo = document.getElementById('file-info');
-        const fileList = document.getElementById('file-list');
-        const clearFiles = document.getElementById('clear-files');
+        const fileListEl = document.getElementById('file-list');
+        const clearFilesBtn = document.getElementById('clear-files');
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        const welcomeBanner = document.getElementById('welcome-banner');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebarHistory = document.getElementById('sidebar-history');
 
-        // Command history
         let commandHistoryArray = [];
         let isVoiceActive = false;
         let soundEnabled = true;
         let selectedFiles = [];
+        let isProcessing = false;
+        let messageCount = 0;
 
-        // Neural network visualization
+        // === Neural Network Canvas ===
         function initNeuralNetwork() {
-            const width = neuralCanvas.width = neuralCanvas.offsetWidth;
-            const height = neuralCanvas.height = neuralCanvas.offsetHeight;
-            
+            const dpr = window.devicePixelRatio || 1;
+            const rect = neuralCanvas.getBoundingClientRect();
+            neuralCanvas.width = rect.width * dpr;
+            neuralCanvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            const width = rect.width;
+            const height = rect.height;
+
             const nodes = [];
             const connections = [];
-            
-            // Create nodes
-            for (let i = 0; i < 15; i++) {
+
+            for (let i = 0; i < 18; i++) {
                 nodes.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
-                    radius: Math.random() * 3 + 2,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: (Math.random() - 0.5) * 0.5
+                    radius: Math.random() * 2.5 + 1.5,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    pulse: Math.random() * Math.PI * 2
                 });
             }
-            
-            // Create connections
+
             for (let i = 0; i < nodes.length; i++) {
                 for (let j = i + 1; j < nodes.length; j++) {
-                    if (Math.random() < 0.2) {
-                        connections.push({ from: i, to: j });
+                    if (Math.random() < 0.22) {
+                        connections.push({ from: i, to: j, pulse: Math.random() * Math.PI * 2 });
                     }
                 }
             }
-            
+
+            let time = 0;
+
             function animate() {
                 ctx.clearRect(0, 0, width, height);
-                
-                // Update and draw connections
-                ctx.strokeStyle = 'rgba(59, 130, 246, 0.2)';
-                ctx.lineWidth = 1;
-                
+                time += 0.02;
+
                 connections.forEach(conn => {
                     const from = nodes[conn.from];
                     const to = nodes[conn.to];
-                    
+                    const dx = to.x - from.x;
+                    const dy = to.y - from.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const alpha = Math.max(0, 0.25 - dist * 0.001) * (0.6 + 0.4 * Math.sin(time * 1.5 + conn.pulse));
+
+                    ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
+                    ctx.lineWidth = 0.8;
                     ctx.beginPath();
                     ctx.moveTo(from.x, from.y);
                     ctx.lineTo(to.x, to.y);
                     ctx.stroke();
+
+                    const t = (Math.sin(time + conn.pulse) * 0.5 + 0.5);
+                    const px = from.x + dx * t;
+                    const py = from.y + dy * t;
+                    ctx.fillStyle = `rgba(6, 182, 212, ${alpha * 1.5})`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, 1.2, 0, Math.PI * 2);
+                    ctx.fill();
                 });
-                
-                // Update and draw nodes
+
                 nodes.forEach(node => {
                     node.x += node.vx;
                     node.y += node.vy;
-                    
-                    if (node.x < 0 || node.x > width) node.vx *= -1;
-                    if (node.y < 0 || node.y > height) node.vy *= -1;
-                    
-                    ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
+                    node.pulse += 0.03;
+
+                    if (node.x < 5 || node.x > width - 5) node.vx *= -1;
+                    if (node.y < 5 || node.y > height - 5) node.vy *= -1;
+                    node.x = Math.max(5, Math.min(width - 5, node.x));
+                    node.y = Math.max(5, Math.min(height - 5, node.y));
+
+                    const glowAlpha = 0.5 + 0.3 * Math.sin(node.pulse);
+                    const glowRadius = node.radius + 4;
+
+                    const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowRadius);
+                    grad.addColorStop(0, `rgba(59, 130, 246, ${glowAlpha * 0.3})`);
+                    grad.addColorStop(1, 'rgba(59, 130, 246, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, glowRadius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = `rgba(140, 180, 255, ${glowAlpha})`;
                     ctx.beginPath();
                     ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
                     ctx.fill();
                 });
-                
+
                 requestAnimationFrame(animate);
             }
-            
+
             animate();
+
+            window.addEventListener('resize', () => {
+                const newRect = neuralCanvas.getBoundingClientRect();
+                neuralCanvas.width = newRect.width * dpr;
+                neuralCanvas.height = newRect.height * dpr;
+                ctx.scale(dpr, dpr);
+            });
         }
 
-        // Initialize neural network
         initNeuralNetwork();
 
-        // Simulation: Telemetry Updates
+        // === Telemetry ===
         setInterval(() => {
+            const cpuEl = document.getElementById('cpu-val');
+            const memEl = document.getElementById('mem-val');
+            const latEl = document.getElementById('latency-val');
+
             const cpu = Math.floor(Math.random() * 30) + 10;
             const mem = Math.floor(Math.random() * 20) + 40;
-            
-            document.getElementById('cpu-val').innerText = cpu;
-            document.getElementById('mem-val').innerText = mem;
+            const lat = Math.floor(Math.random() * 10) + 8;
+
+            cpuEl.innerText = cpu;
+            memEl.innerText = mem;
+            if (latEl) latEl.innerText = lat;
+
+            cpuEl.classList.remove('val-flash');
+            memEl.classList.remove('val-flash');
+            void cpuEl.offsetWidth;
+            cpuEl.classList.add('val-flash');
+            memEl.classList.add('val-flash');
         }, 3000);
 
-        // Command suggestions
+        // === Commands ===
         const commands = [
-            { name: 'scan', description: 'Scan network for vulnerabilities' },
-            { name: 'encrypt', description: 'Encrypt data stream' },
-            { name: 'analyze', description: 'Analyze system performance' },
-            { name: 'optimize', description: 'Optimize neural pathways' },
-            { name: 'connect', description: 'Establish new connection' },
-            { name: 'status', description: 'Display system status' },
-            { name: 'help', description: 'Display available commands' }
+            { name: 'scan', desc: 'Scan network for vulnerabilities' },
+            { name: 'encrypt', desc: 'Encrypt data stream with quantum keys' },
+            { name: 'analyze', desc: 'Analyze system performance metrics' },
+            { name: 'optimize', desc: 'Optimize neural pathway efficiency' },
+            { name: 'connect', desc: 'Establish secure external connection' },
+            { name: 'status', desc: 'Display full system status report' },
+            { name: 'help', desc: 'Display all available directives' },
+            { name: 'decrypt', desc: 'Decrypt received data stream' },
+            { name: 'trace', desc: 'Trace incoming signal origin' },
+            { name: 'deploy', desc: 'Deploy neural module update' }
         ];
 
-        // Show command suggestions
+        const responses = {
+            'scan': `Initiating deep network scan...\n\nScanning 1,247 nodes across 12 subnets...\n\n[████████████████████] 100%\n\nResults:\n  • 1,244 nodes: Secure\n  • 2 nodes: Minor anomalies detected\n  • 1 node: Potential vulnerability (Port 8443)\n\nRecommendation: Apply security patch v2.4.1 to Node-Alpha-7.\nThreat level: LOW\nConfidence: 97.3%`,
+
+            'encrypt': `Activating quantum encryption protocol...\n\nKey generation: 4096-bit quantum-resistant\nAlgorithm: Kyber-1024 + X25519 hybrid\n\n[████████████████████] 100%\n\nData stream secured. All neural pathways now encrypted.\nKey rotation: Every 60 seconds\nIntrusion resistance: 99.97%`,
+
+            'analyze': `System analysis complete.\n\nCPU Efficiency:    94.2%  ████████████████░\nMemory Allocation: 78.1%  █████████████░░░░\nNeural Stability:  99.8%  ██████████████████\nQuantum Coherence: 96.4%  ████████████████░\nThermal Output:    42.3°C ████████████░░░░░\n\nAll systems operating within optimal parameters.\nNext maintenance window: 72 hours.`,
+
+            'optimize': `Optimizing neural pathways...\n\nRecalibrating 847 synaptic connections...\nCompressing redundant data streams...\nRebalancing quantum processing threads...\n\n[████████████████████] 100%\n\nResults:\n  • Processing speed: +23.7%\n  • Energy consumption: -12.4%\n  • Latency reduction: -8.2ms\n  • Memory efficiency: +15.1%\n\nOptimization complete. System performing above baseline.`,
+
+            'connect': `Establishing secure connection...\n\nTarget: Server-Alpha-7\nProtocol: QNET-256\nAuthentication: Biometric + Quantum Key\n\nHandshake: [████████████████████] Complete\n\nConnection established.\n  • Data transfer rate: 4.2 TB/s\n  • Encryption: Active\n  • Latency: 3ms\n  • Uptime SLA: 99.999%`,
+
+            'status': `╔══════════════════════════════════╗\n║     NXr CORE — STATUS REPORT      ║\n╠══════════════════════════════════╣\n║                                  ║\n║  Neural Link:    99.8% STABLE    ║\n║  Security:       MAXIMUM         ║\n║  Processing:     QUANTUM MODE    ║\n║  Uptime:         14d 07h 32m    ║\n║  Active Threads: 2,847           ║\n║  Memory:         78.1% USED      ║\n║  Temperature:    42.3°C          ║\n║  Threat Level:   NONE            ║\n║                                  ║\n╚══════════════════════════════════╝\n\nAll systems nominal. No action required.`,
+
+            'help': `Available Directives:\n\n  scan      — Scan network for vulnerabilities\n  encrypt   — Encrypt data stream with quantum keys\n  decrypt   — Decrypt received data stream\n  analyze   — Analyze system performance metrics\n  optimize  — Optimize neural pathway efficiency\n  connect   — Establish secure external connection\n  trace     — Trace incoming signal origin\n  deploy    — Deploy neural module update\n  status    — Display full system status report\n  help      — Display this help message\n\nFile Operations:\n  Click the paperclip icon to upload files.\n  Files are processed with quantum encryption.\n\nVoice Input:\n  Click the microphone icon for voice directives.`,
+
+            'decrypt': `Decrypting data stream...\n\nAnalyzing encryption layer... AES-256-GCM detected.\nQuantum key extraction: [████████████████████] Complete\n\nDecryption successful.\n  • Original size: 2.4 GB\n  • Content type: Neural matrix data\n  • Integrity check: PASSED\n  • Timestamp: ${new Date().toISOString()}`,
+
+            'trace': `Tracing signal origin...\n\nHops: 7 | Protocols: QNET → TOR → Mesh\n\n[████████████████████] Complete\n\nTrace Results:\n  • Origin: Sector-9, Node-47\n  • Distance: 2,847 km\n  • Relay nodes: 7\n  • Anonymization: Triple-layer\n  • Confidence: 94.1%\n\nSignal authenticated. Source is friendly.`,
+
+            'deploy': `Deploying neural module update...\n\nModule: NXr-Patch-v3.0.7\nSize: 847 MB\nChanges: 23 improvements, 4 security fixes\n\nBacking up current state...\n[████████████████████] Complete\n\nApplying update...\n[████████████████████] Complete\n\nVerifying integrity... PASSED\nRestarting neural threads... DONE\n\nDeployment successful. All systems upgraded.`
+        };
+
+        // === Message Creation ===
+        function createMessage(text, sender) {
+            const div = document.createElement('div');
+            div.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} msg-animate`;
+
+            if (sender === 'user') {
+                div.innerHTML = `
+                    <div class="max-w-[80%] bg-blue-950/40 border border-blue-500/20 p-4 rounded-2xl rounded-tr-sm">
+                        <p class="text-sm font-mono text-blue-100 leading-relaxed">${escapeHtml(text)}</p>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = `
+                    <div class="max-w-[85%] flex gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600/15 border border-blue-500/25 flex items-center justify-center shrink-0 mt-1">
+                            <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
+                        </div>
+                        <div class="bg-zinc-900/60 border border-zinc-800/80 p-4 rounded-2xl rounded-tl-sm">
+                            <p class="text-[10px] font-mono text-zinc-600 mb-2 tracking-wider">CORE_OUT &gt;&gt;</p>
+                            <pre class="text-sm leading-relaxed text-zinc-200 whitespace-pre-wrap font-mono">${escapeHtml(text)}</pre>
+                        </div>
+                    </div>
+                `;
+            }
+            return div;
+        }
+
+        function createTypingIndicator() {
+            const div = document.createElement('div');
+            div.className = 'flex justify-start msg-animate';
+            div.id = 'active-typing';
+            div.innerHTML = `
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-600/15 border border-blue-500/25 flex items-center justify-center shrink-0">
+                        <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
+                    </div>
+                    <div class="bg-zinc-900/60 border border-zinc-800/80 px-5 py-4 rounded-2xl rounded-tl-sm">
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
+        }
+
+        function scrollToBottom() {
+            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+        }
+
+        function hideWelcome() {
+            if (welcomeBanner) welcomeBanner.style.display = 'none';
+        }
+
+        // === Send Handler ===
+        async function handleSend(text) {
+            const msg = (text || userInput.value).trim();
+            if (!msg && selectedFiles.length === 0) return;
+            if (isProcessing) return;
+            isProcessing = true;
+
+            hideWelcome();
+
+            if (selectedFiles.length > 0) {
+                const fileNames = selectedFiles.map(f => f.name).join(', ');
+                const totalSize = selectedFiles.reduce((acc, f) => acc + f.size, 0);
+                const fileMsg = msg ? `${msg}\n\n📎 Files: ${fileNames} (${formatFileSize(totalSize)})` : `📎 File upload: ${fileNames} (${formatFileSize(totalSize)})`;
+                chatFeed.appendChild(createMessage(fileMsg, 'user'));
+                lucide.createIcons();
+                scrollToBottom();
+
+                const loader = createTypingIndicator();
+                chatFeed.appendChild(loader);
+                lucide.createIcons();
+                scrollToBottom();
+
+                await delay(1800 + Math.random() * 1200);
+                loader.remove();
+
+                const response = `FILE UPLOAD COMPLETE\n\nFiles processed: ${selectedFiles.length}\nTotal size: ${formatFileSize(totalSize)}\nEncryption: Quantum-256\nIntegrity: Verified\nStorage: Neural archive Sector-7\n\nFiles: ${fileNames}\n\nRetrieve with: "download [filename]"`;
+                chatFeed.appendChild(createMessage(response, 'bot'));
+                lucide.createIcons();
+                scrollToBottom();
+
+                selectedFiles = [];
+                fileInput.value = '';
+                fileInfo.classList.remove('active');
+                fileBtn.classList.remove('text-blue-400', 'file-uploading');
+
+                if (msg) addToHistory(msg);
+                isProcessing = false;
+                return;
+            }
+
+            addToHistory(msg);
+            chatFeed.appendChild(createMessage(msg, 'user'));
+            lucide.createIcons();
+            userInput.value = '';
+            commandSuggestion.classList.remove('active');
+            sendBtn.disabled = true;
+            scrollToBottom();
+
+            const loader = createTypingIndicator();
+            chatFeed.appendChild(loader);
+            lucide.createIcons();
+            scrollToBottom();
+
+            await delay(1200 + Math.random() * 1500);
+            loader.remove();
+
+            const command = msg.toLowerCase().split(' ')[0];
+            let responseText = responses[command];
+
+            if (!responseText) {
+                const partial = commands.find(c => c.name.startsWith(command) || command.includes(c.name));
+                if (partial) {
+                    responseText = responses[partial.name];
+                } else {
+                    responseText = `Directive "${escapeHtml(command)}" not recognized.\n\nType "help" for available commands.\n\nTip: Commands are case-insensitive. Partial matches are supported.`;
+                }
+            }
+
+            if (Math.random() > 0.6 && command !== 'help') {
+                const extras = [
+                    `\n\nNeural efficiency: +${Math.floor(Math.random() * 8 + 2)}% this cycle.`,
+                    `\n\nQuantum threads rebalanced automatically.`,
+                    `\n\nSyslog updated. Entry #${(10000 + Math.floor(Math.random() * 90000))}.`,
+                    `\n\nBackground scan completed: No anomalies.`,
+                    ''
+                ];
+                responseText += extras[Math.floor(Math.random() * extras.length)];
+            }
+
+            chatFeed.appendChild(createMessage(responseText, 'bot'));
+            lucide.createIcons();
+            scrollToBottom();
+
+            messageCount++;
+            isProcessing = false;
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function addToHistory(cmd) {
+            commandHistoryArray.unshift(cmd);
+            if (commandHistoryArray.length > 15) commandHistoryArray.pop();
+
+            historyList.innerHTML = '';
+            commandHistoryArray.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'cursor-pointer hover:text-blue-400 transition-colors py-0.5 px-1 rounded hover:bg-zinc-800/30';
+                div.innerHTML = `<span class="text-zinc-700 mr-1.5">&gt;</span>${escapeHtml(c)}`;
+                div.addEventListener('click', () => {
+                    userInput.value = c;
+                    commandHistory.classList.remove('active');
+                    userInput.focus();
+                    sendBtn.disabled = false;
+                });
+                historyList.appendChild(div);
+            });
+
+            if (sidebarHistory && commandHistoryArray.length > 1) {
+                const item = document.createElement('div');
+                item.className = 'text-[10px] font-mono text-zinc-600 py-1 px-2 rounded border border-transparent hover:border-zinc-800 hover:text-zinc-400 transition-colors cursor-pointer';
+                item.innerHTML = `<span class="text-zinc-700 mr-2">&gt;</span>${escapeHtml(cmd)}`;
+                item.addEventListener('click', () => {
+                    userInput.value = cmd;
+                    userInput.focus();
+                    sendBtn.disabled = false;
+                    closeSidebar();
+                });
+                sidebarHistory.prepend(item);
+                while (sidebarHistory.children.length > 8) {
+                    sidebarHistory.removeChild(sidebarHistory.lastChild);
+                }
+            }
+        }
+
+        // === Input Events ===
         userInput.addEventListener('input', () => {
             const value = userInput.value.trim().toLowerCase();
-            
+            sendBtn.disabled = value.length === 0;
+
             if (value.length > 0) {
-                const filteredCommands = commands.filter(cmd => 
-                    cmd.name.includes(value)
-                );
-                
-                if (filteredCommands.length > 0) {
+                const filtered = commands.filter(cmd => cmd.name.includes(value));
+                if (filtered.length > 0) {
                     suggestionList.innerHTML = '';
-                    filteredCommands.forEach(cmd => {
+                    filtered.forEach(cmd => {
                         const div = document.createElement('div');
-                        div.className = 'p-2 hover:bg-zinc-800 rounded cursor-pointer text-zinc-300';
-                        div.innerHTML = `<span class="text-blue-400">${cmd.name}</span> - ${cmd.description}`;
+                        div.className = 'px-3 py-2 hover:bg-zinc-800/60 rounded-md cursor-pointer transition-colors flex justify-between items-center';
+                        div.innerHTML = `<span class="text-blue-400 font-mono">${cmd.name}</span><span class="text-[10px] text-zinc-600">${cmd.desc}</span>`;
                         div.addEventListener('click', () => {
                             userInput.value = cmd.name;
                             commandSuggestion.classList.remove('active');
                             userInput.focus();
+                            sendBtn.disabled = false;
                         });
                         suggestionList.appendChild(div);
                     });
@@ -539,270 +888,147 @@
             }
         });
 
-        // Hide suggestions when clicking outside
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        sendBtn.addEventListener('click', () => handleSend());
+
         document.addEventListener('click', (e) => {
             if (!userInput.contains(e.target) && !commandSuggestion.contains(e.target)) {
                 commandSuggestion.classList.remove('active');
             }
         });
 
-        // Voice input simulation
+        document.querySelectorAll('.quick-cmd').forEach(btn => {
+            btn.addEventListener('click', () => {
+                handleSend(btn.dataset.cmd);
+            });
+        });
+
+        // === Voice Input ===
         voiceBtn.addEventListener('click', () => {
             isVoiceActive = !isVoiceActive;
-            
+
             if (isVoiceActive) {
                 voiceIndicator.classList.remove('hidden');
                 voiceBtn.classList.add('text-red-500');
-                
-                // Simulate voice recognition
+                voiceBtn.classList.remove('text-zinc-600');
+
                 setTimeout(() => {
-                    const commands = ['scan network', 'analyze system', 'optimize performance', 'show status'];
-                    const randomCommand = commands[Math.floor(Math.random() * commands.length)];
-                    userInput.value = randomCommand;
-                    
-                    // Hide voice indicator
+                    const options = ['scan network', 'analyze system', 'show status', 'optimize performance', 'run full diagnostics'];
+                    const random = options[Math.floor(Math.random() * options.length)];
+                    userInput.value = random;
+                    sendBtn.disabled = false;
+
                     voiceIndicator.classList.add('hidden');
                     voiceBtn.classList.remove('text-red-500');
+                    voiceBtn.classList.add('text-zinc-600');
                     isVoiceActive = false;
-                    
-                    // Auto-send the command
+
                     handleSend();
                 }, 2000);
             } else {
                 voiceIndicator.classList.add('hidden');
                 voiceBtn.classList.remove('text-red-500');
+                voiceBtn.classList.add('text-zinc-600');
             }
         });
 
-        // File upload handling
+        // === File Upload ===
         fileInput.addEventListener('change', (e) => {
             selectedFiles = Array.from(e.target.files);
-            
+
             if (selectedFiles.length > 0) {
-                fileList.innerHTML = '';
+                fileListEl.innerHTML = '';
                 let totalSize = 0;
-                
-                selectedFiles.forEach((file, index) => {
+
+                selectedFiles.forEach(file => {
                     totalSize += file.size;
-                    const fileDiv = document.createElement('div');
-                    fileDiv.className = 'flex items-center justify-between p-2 bg-zinc-800/50 rounded';
-                    fileDiv.innerHTML = `
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="file" class="w-3 h-3 text-blue-400"></i>
-                            <span class="truncate max-w-[200px]">${file.name}</span>
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between p-2 bg-zinc-800/40 rounded';
+                    div.innerHTML = `
+                        <div class="flex items-center gap-2 min-w-0">
+                            <i data-lucide="file" class="w-3 h-3 text-blue-400 shrink-0"></i>
+                            <span class="truncate">${escapeHtml(file.name)}</span>
                         </div>
-                        <span class="text-zinc-500">${formatFileSize(file.size)}</span>
+                        <span class="text-zinc-500 shrink-0 ml-2">${formatFileSize(file.size)}</span>
                     `;
-                    fileList.appendChild(fileDiv);
+                    fileListEl.appendChild(div);
                 });
-                
-                // Add total size info
+
                 const totalDiv = document.createElement('div');
-                totalDiv.className = 'mt-2 pt-2 border-t border-zinc-700 flex justify-between text-xs';
+                totalDiv.className = 'mt-2 pt-2 border-t border-zinc-700/50 flex justify-between text-[10px]';
                 totalDiv.innerHTML = `
-                    <span class="text-zinc-400">Total: ${selectedFiles.length} file(s)</span>
+                    <span class="text-zinc-500">${selectedFiles.length} file(s)</span>
                     <span class="text-blue-400">${formatFileSize(totalSize)}</span>
                 `;
-                fileList.appendChild(totalDiv);
-                
+                fileListEl.appendChild(totalDiv);
+
                 fileInfo.classList.add('active');
                 fileBtn.classList.add('text-blue-400', 'file-uploading');
-                
-                // Add file info to chat
-                const fileMessage = `📎 File(s) ready for upload: ${selectedFiles.map(f => f.name).join(', ')} (Total: ${formatFileSize(totalSize)})`;
-                chatFeed.appendChild(createMessage(fileMessage, 'user'));
-                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+                lucide.createIcons();
             }
-            
-            lucide.createIcons();
         });
 
-        // Clear files
-        clearFiles.addEventListener('click', () => {
+        clearFilesBtn.addEventListener('click', () => {
             selectedFiles = [];
             fileInput.value = '';
             fileInfo.classList.remove('active');
             fileBtn.classList.remove('text-blue-400', 'file-uploading');
         });
 
-        // Format file size
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
-
-        // Command history toggle
-        commandHistoryBtn.addEventListener('click', () => {
+        // === Command History Toggle ===
+        commandHistoryBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             commandHistory.classList.toggle('active');
         });
 
-        // Sound toggle
+        // === Sound Toggle ===
         soundToggle.addEventListener('click', () => {
             soundEnabled = !soundEnabled;
             const icon = soundToggle.querySelector('i');
-            
-            if (soundEnabled) {
-                icon.setAttribute('data-lucide', 'volume-2');
-            } else {
-                icon.setAttribute('data-lucide', 'volume-x');
-            }
-            
+            icon.setAttribute('data-lucide', soundEnabled ? 'volume-2' : 'volume-x');
             lucide.createIcons();
         });
 
-        // Enhanced response system
-        const responses = {
-            'scan': 'Initiating deep network scan... Analyzing 1,247 nodes. Detected 3 potential vulnerabilities. Recommendation: Apply security patch v2.4.1.',
-            'encrypt': 'Activating quantum encryption protocol... Data stream secured with 4096-bit key. Neural pathways now protected against intrusion.',
-            'analyze': 'System analysis complete. CPU efficiency at 94.2%. Memory allocation optimized. Neural link stability: 99.8%. All systems operating within optimal parameters.',
-            'optimize': 'Optimizing neural pathways... Recalibrating synaptic connections. Processing speed increased by 23.7%. Energy consumption reduced by 12.4%.',
-            'connect': 'Establishing secure connection... Authentication successful. Link established with Server-Alpha-7. Data transfer rate: 4.2TB/s.',
-            'status': 'System Status: OPTIMAL\nNeural Link: 99.8% stable\nSecurity: MAXIMUM ENCRYPTION\nProcessing: QUANTUM MODE\nUptime: 14 days, 7 hours, 32 minutes',
-            'help': 'Available commands:\n- scan: Scan network for vulnerabilities\n- encrypt: Encrypt data stream\n- analyze: Analyze system performance\n- optimize: Optimize neural pathways\n- connect: Establish new connection\n- status: Display system status\n- help: Display this help message\n\nFile Operations:\n- Click the paperclip icon to upload files\n- Files will be processed with quantum encryption'
-        };
-
-        function createMessage(text, sender, isError = false) {
-            const div = document.createElement('div');
-            div.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-4 duration-300`;
-            
-            if (sender === 'user') {
-                div.innerHTML = `
-                    <div class="max-w-[80%] glass p-4 rounded-2xl rounded-tr-none border-blue-500/30">
-                        <p class="text-sm font-mono text-blue-100">${text}</p>
-                    </div>
-                `;
-            } else {
-                div.innerHTML = `
-                    <div class="max-w-[85%] flex gap-4">
-                        <div class="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
-                            <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
-                        </div>
-                        <div class="glass p-5 rounded-2xl rounded-tl-none border-zinc-800">
-                            <p class="text-xs font-mono text-zinc-500 mb-2 underline decoration-blue-500/30">CORE_OUT >></p>
-                            <p class="text-sm leading-relaxed text-zinc-200 whitespace-pre-line">${text}</p>
-                        </div>
-                    </div>
-                `;
+        // === Clear Chat ===
+        clearChatBtn.addEventListener('click', () => {
+            if (isProcessing) return;
+            chatFeed.innerHTML = '';
+            messageCount = 0;
+            if (welcomeBanner) {
+                chatFeed.appendChild(welcomeBanner);
+                welcomeBanner.style.display = '';
             }
-            return div;
-        }
-
-        function createTypingIndicator() {
-            const div = document.createElement('div');
-            div.className = "flex gap-4 typing-indicator-container";
-            div.innerHTML = `
-                <div class="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0">
-                    <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
-                </div>
-                <div class="glass p-5 rounded-2xl rounded-tl-none border-zinc-800">
-                    <div class="typing-indicator">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </div>
-            `;
-            return div;
-        }
-
-        async function handleSend() {
-            const msg = userInput.value.trim();
-            if (!msg && selectedFiles.length === 0) return;
-
-            // Handle file upload
-            if (selectedFiles.length > 0) {
-                const loader = createTypingIndicator();
-                chatFeed.appendChild(loader);
-                lucide.createIcons();
-
-                setTimeout(() => {
-                    loader.remove();
-                    
-                    const fileNames = selectedFiles.map(f => f.name).join(', ');
-                    const totalSize = selectedFiles.reduce((acc, f) => acc + f.size, 0);
-                    
-                    const response = `📡 FILE UPLOAD COMPLETE\n\nFiles processed: ${selectedFiles.length}\nTotal size: ${formatFileSize(totalSize)}\nEncryption: Quantum-256\nStatus: Secured in neural storage\n\nFiles: ${fileNames}\n\nAccess command: "retrieve ${fileNames.split(',')[0]}" to download`;
-                    
-                    chatFeed.appendChild(createMessage(response, 'bot'));
-                    lucide.createIcons();
-                    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-                    
-                    // Clear files after upload
-                    selectedFiles = [];
-                    fileInput.value = '';
-                    fileInfo.classList.remove('active');
-                    fileBtn.classList.remove('text-blue-400', 'file-uploading');
-                }, 2000);
-            }
-
-            // Handle text message
-            if (msg) {
-                // Add to command history
-                commandHistoryArray.unshift(msg);
-                if (commandHistoryArray.length > 10) commandHistoryArray.pop();
-                
-                // Update command history display
-                historyList.innerHTML = '';
-                commandHistoryArray.forEach(cmd => {
-                    const div = document.createElement('div');
-                    div.className = 'cursor-pointer hover:text-blue-400';
-                    div.textContent = cmd;
-                    div.addEventListener('click', () => {
-                        userInput.value = cmd;
-                        commandHistory.classList.remove('active');
-                        userInput.focus();
-                    });
-                    historyList.appendChild(div);
-                });
-
-                chatFeed.appendChild(createMessage(msg, 'user'));
-                userInput.value = '';
-                commandSuggestion.classList.remove('active');
-                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-
-                // Simulate Jarvis "Thinking"
-                const loader = createTypingIndicator();
-                chatFeed.appendChild(loader);
-                lucide.createIcons();
-
-                setTimeout(() => {
-                    loader.remove();
-                    
-                    // Process command
-                    const command = msg.toLowerCase().split(' ')[0];
-                    let responseText = responses[command] || `Command "${command}" not recognized. Type "help" for available commands.`;
-                    
-                    // Add some randomness to make responses feel more dynamic
-                    if (Math.random() > 0.7 && command !== 'help') {
-                        responseText += `\n\nAdditional data: Neural efficiency increased by ${Math.floor(Math.random() * 10 + 5)}%. Quantum processing threads optimized.`;
-                    }
-                    
-                    chatFeed.appendChild(createMessage(responseText, 'bot'));
-                    lucide.createIcons();
-                    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-                    
-                    // Play sound effect if enabled
-                    if (soundEnabled) {
-                        // In a real implementation, you would play an actual sound here
-                        console.log('Playing notification sound');
-                    }
-                }, 1500);
-            }
-        }
-
-        sendBtn.addEventListener('click', handleSend);
-        userInput.addEventListener('keypress', (e) => { 
-            if (e.key === 'Enter') handleSend(); 
+            lucide.createIcons();
         });
 
-        // Initialize with a welcome message
-        setTimeout(() => {
-            chatFeed.appendChild(createMessage('Neural link established. Welcome back, Administrator. System security is at maximum. How may I assist you today?', 'bot'));
-            lucide.createIcons();
-        }, 1000);
+        // === Mobile Sidebar ===
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sidebar.classList.remove('hidden');
+            sidebar.classList.add('flex');
+            sidebarOverlay.classList.add('visible');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('visible');
+            if (window.innerWidth < 1280) {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('flex');
+            }
+        }
+
+        menuToggle.addEventListener('click', openSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // === Focus input on load ===
+        userInput.focus();
     </script>
 </body>
 </html>
