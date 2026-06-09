@@ -3,331 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NXr Core | Neural Interface v3.0</title>
+    <title>NXr Core | Neural Interface v5.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&family=Orbitron:wght@400;500;600;700&display=swap');
 
-        :root {
-            --bg-color: #050507;
-            --accent-blue: #3b82f6;
-            --accent-cyan: #06b6d4;
-            --neon-glow: 0 0 15px rgba(59, 130, 246, 0.5);
-            --hologram-color: rgba(59, 130, 246, 0.15);
+        :root { --bg:#050507; --blue:#3b82f6; --cyan:#06b6d4; }
+
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:#f4f4f5;overflow:hidden}
+        .font-mono{font-family:'JetBrains Mono',monospace}
+        .font-orbitron{font-family:'Orbitron',sans-serif}
+
+        /* Boot Overlay */
+        #boot-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease,visibility .8s ease}
+        #boot-overlay.done{opacity:0;visibility:hidden;pointer-events:none}
+        .boot-line{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(59,130,246,.5);opacity:0;transform:translateY(5px);transition:all .35s ease;margin:3px 0}
+        .boot-line.visible{opacity:1;transform:translateY(0)}
+        .boot-progress{width:220px;height:2px;background:rgba(59,130,246,.08);border-radius:2px;overflow:hidden;margin-top:20px}
+        .boot-bar{height:100%;width:0;background:linear-gradient(90deg,#3b82f6,#06b6d4);border-radius:2px;transition:width .25s ease}
+
+        /* Scanline */
+        .scanline{width:100%;height:2px;background:linear-gradient(90deg,transparent 0%,rgba(59,130,246,.08) 30%,rgba(59,130,246,.15) 50%,rgba(59,130,246,.08) 70%,transparent 100%);position:fixed;top:0;left:0;z-index:100;pointer-events:none;animation:scan 8s linear infinite}
+        @keyframes scan{0%{top:-2px}100%{top:100%}}
+
+        /* Core Pulse */
+        @keyframes pulse-glow{0%{box-shadow:0 0 5px rgba(59,130,246,.2),inset 0 0 5px rgba(59,130,246,.05)}50%{box-shadow:0 0 25px rgba(59,130,246,.5),inset 0 0 10px rgba(59,130,246,.1)}100%{box-shadow:0 0 5px rgba(59,130,246,.2),inset 0 0 5px rgba(59,130,246,.05)}}
+        .core-pulse{animation:pulse-glow 3s infinite}
+
+        /* Hologram */
+        .hologram{position:relative;overflow:hidden}
+        .hologram::before{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);animation:holo 4s infinite;pointer-events:none}
+        @keyframes holo{0%{left:-100%}100%{left:100%}}
+
+        /* Voice Bars */
+        .voice-bar{width:3px;background:rgba(59,130,246,.7);margin:0 2px;border-radius:3px;animation:vw 1s infinite ease-in-out}
+        .voice-bar:nth-child(1){animation-delay:0s}.voice-bar:nth-child(2){animation-delay:.12s}.voice-bar:nth-child(3){animation-delay:.24s}.voice-bar:nth-child(4){animation-delay:.36s}.voice-bar:nth-child(5){animation-delay:.48s}
+        @keyframes vw{0%,100%{height:5px}50%{height:22px}}
+
+        /* Typing Indicator */
+        .typing-indicator span{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3b82f6;margin:0 3px;animation:tb 1.4s infinite}
+        .typing-indicator span:nth-child(2){animation-delay:.2s}.typing-indicator span:nth-child(3){animation-delay:.4s}
+        @keyframes tb{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-10px);opacity:1}}
+
+        /* Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar{width:3px}
+        .custom-scrollbar::-webkit-scrollbar-track{background:transparent}
+        .custom-scrollbar::-webkit-scrollbar-thumb{background:rgba(59,130,246,.3);border-radius:10px}
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover{background:rgba(59,130,246,.5)}
+
+        /* Glass */
+        .glass{background:rgba(15,15,20,.7);backdrop-filter:blur(15px);border:1px solid rgba(59,130,246,.15)}
+        .glass-panel-solid{background:rgba(15,15,20,.5);border:1px solid rgba(59,130,246,.1)}
+
+        /* Command Suggestion */
+        .command-suggestion{position:absolute;bottom:100%;left:0;right:0;background:rgba(10,10,15,.95);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:8px;margin-bottom:8px;display:none;z-index:50;backdrop-filter:blur(20px)}
+        .command-suggestion.active{display:block}
+
+        /* File */
+        @keyframes file-pulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,.4)}70%{box-shadow:0 0 0 10px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}
+        .file-uploading{animation:file-pulse 2s infinite}
+        .file-info{position:absolute;bottom:100%;left:0;right:0;background:rgba(10,10,15,.95);border:1px solid rgba(59,130,246,.3);border-radius:8px;padding:12px;margin-bottom:8px;display:none;z-index:50;backdrop-filter:blur(20px)}
+        .file-info.active{display:block}
+
+        /* Rotations */
+        @keyframes spin-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .animate-spin-slow{animation:spin-slow 8s linear infinite}
+        @keyframes spin-reverse{from{transform:rotate(360deg)}to{transform:rotate(0deg)}}
+        .animate-spin-reverse{animation:spin-reverse 10s linear infinite}
+
+        /* Energy Pulse */
+        @keyframes ping-slow{0%{transform:scale(.8);opacity:.5}70%{transform:scale(1.4);opacity:0}100%{opacity:0}}
+        .animate-ping-slow{animation:ping-slow 2.5s infinite}
+
+        /* Core Glow */
+        @keyframes core-glow-anim{0%{box-shadow:0 0 5px rgba(59,130,246,.3)}50%{box-shadow:0 0 25px rgba(59,130,246,.9)}100%{box-shadow:0 0 5px rgba(59,130,246,.3)}}
+        .core-glow{animation:core-glow-anim 2s infinite ease-in-out}
+
+        /* Flicker */
+        @keyframes flicker{0%,100%{opacity:1}50%{opacity:.85}52%{opacity:1}70%{opacity:.9}}
+        .animate-flicker{animation:flicker 2.5s infinite}
+
+        /* Message Enter */
+        @keyframes msg-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        .msg-animate{animation:msg-enter .35s cubic-bezier(.16,1,.3,1) both}
+
+        /* Status Blink */
+        @keyframes status-blink{0%,100%{opacity:1}50%{opacity:.3}}
+        .status-blink{animation:status-blink 2s ease-in-out infinite}
+
+        /* Value Flash */
+        @keyframes val-flash{0%{color:#fff}100%{color:inherit}}
+        .val-flash{animation:val-flash .6s ease-out}
+
+        /* Input Glow */
+        .input-glow-ring{position:absolute;inset:-1px;border-radius:7px;background:linear-gradient(135deg,rgba(59,130,246,.3),rgba(6,182,212,.2),rgba(59,130,246,.1));opacity:0;transition:opacity .4s ease;pointer-events:none;z-index:-1}
+        .input-wrapper:focus-within .input-glow-ring{opacity:1}
+
+        /* Neural Module */
+        .neural-module{transition:all .3s ease}
+        .neural-module:hover{border-color:rgba(6,182,212,.4);box-shadow:0 0 20px rgba(59,130,246,.1),inset 0 0 20px rgba(59,130,246,.05);transform:translateY(-1px)}
+
+        /* Toast */
+        #toast-container{position:fixed;top:20px;right:20px;z-index:9000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+        .toast{background:rgba(10,10,20,.95);backdrop-filter:blur(20px);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#f4f4f5;display:flex;align-items:center;gap:10px;pointer-events:auto;animation:toast-in .4s cubic-bezier(.16,1,.3,1);max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+        .toast.out{animation:toast-out .3s ease forwards}
+        .toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .toast-dot.info{background:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,.5)}
+        .toast-dot.success{background:#10b981;box-shadow:0 0 8px rgba(16,185,129,.5)}
+        .toast-dot.warning{background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.5)}
+        .toast-dot.error{background:#ef4444;box-shadow:0 0 8px rgba(239,68,68,.5)}
+        @keyframes toast-in{from{opacity:0;transform:translateX(40px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
+        @keyframes toast-out{from{opacity:1;transform:translateX(0) scale(1)}to{opacity:0;transform:translateX(40px) scale(.95)}}
+
+        /* Typewriter Cursor */
+        .tw-cursor::after{content:'█';color:#3b82f6;animation:cb .7s step-end infinite;margin-left:1px}
+        @keyframes cb{0%,100%{opacity:1}50%{opacity:0}}
+
+        /* Copy Button */
+        .copy-btn{position:absolute;top:8px;right:8px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);border-radius:6px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(59,130,246,.4);cursor:pointer;opacity:0;transition:all .2s ease;letter-spacing:.05em}
+        .bot-msg-wrap:hover .copy-btn{opacity:1}
+        .copy-btn:hover{background:rgba(59,130,246,.15);color:#3b82f6}
+
+        /* Welcome Title */
+        .welcome-title{border-right:2px solid rgba(59,130,246,.8);white-space:nowrap;overflow:hidden;display:inline-block;animation:cur-blink .8s step-end infinite}
+        .welcome-title.done{border-right-color:transparent;animation:none}
+        @keyframes cur-blink{0%,100%{border-right-color:rgba(59,130,246,.8)}50%{border-right-color:transparent}}
+
+        /* Particles */
+        #particles-canvas{position:absolute;inset:0;pointer-events:none;z-index:0}
+        #chat-feed{position:relative;z-index:1}
+
+        /* Settings Panel */
+        .settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:290;opacity:0;pointer-events:none;transition:opacity .3s}
+        .settings-overlay.visible{opacity:1;pointer-events:all}
+        .settings-panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:rgba(8,8,12,.95);border-left:1px solid rgba(59,130,246,.2);backdrop-filter:blur(25px);z-index:300;transform:translateX(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+        .settings-panel.open{transform:translateX(0)}
+
+        /* History Panel */
+        .history-panel{position:fixed;top:56px;right:20px;width:320px;max-height:400px;background:rgba(8,8,12,.95);border:1px solid rgba(59,130,246,.2);backdrop-filter:blur(25px);border-radius:12px;z-index:250;display:none;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.6);overflow:hidden}
+        .history-panel.open{display:flex}
+
+        /* Custom Toggle Switch */
+        .toggle-switch{position:relative;width:40px;height:20px;background:rgba(39,39,42,.8);border-radius:10px;cursor:pointer;border:1px solid rgba(59,130,246,.3);transition:all .3s;flex-shrink:0}
+        .toggle-switch.active{background:rgba(59,130,246,.3);border-color:rgba(59,130,246,.6)}
+        .toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#71717a;border-radius:50%;transition:all .3s}
+        .toggle-switch.active::after{left:22px;background:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,.5)}
+
+        /* Custom Select */
+        .cyber-select{background:rgba(15,15,20,.8);border:1px solid rgba(59,130,246,.3);color:#f4f4f5;padding:6px 10px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px}
+        .cyber-select:focus{border-color:rgba(59,130,246,.6);box-shadow:0 0 10px rgba(59,130,246,.2)}
+        .cyber-select option{background:#0a0a0f;color:#f4f4f5}
+
+        /* Header Button Active State */
+        .header-action{transition:all .2s ease;border-radius:6px}
+        .header-action.active{color:#3b82f6;background:rgba(59,130,246,.1)}
+
+        /* Mobile Sidebar */
+        @media(max-width:1279px){
+            .sidebar-mobile-toggle{display:flex!important}
+            .sidebar-panel{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+            .sidebar-panel.open{transform:translateX(0)}
+        }
+        @media(max-width:640px){
+            .settings-panel{width:100%}
+            .history-panel{right:10px;left:10px;width:auto}
         }
 
-        * { box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: #f4f4f5;
-            margin: 0;
-            overflow: hidden;
+        @media(prefers-reduced-motion:reduce){
+            *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
         }
-
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .font-orbitron { font-family: 'Orbitron', sans-serif; }
-
-        .scanline {
-            width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.08) 30%, rgba(59,130,246,0.15) 50%, rgba(59,130,246,0.08) 70%, transparent 100%);
-            position: fixed; top: 0; left: 0; z-index: 100;
-            pointer-events: none;
-            animation: scan 8s linear infinite;
-        }
-
-        @keyframes scan {
-            0% { top: -2px; }
-            100% { top: 100%; }
-        }
-
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2), inset 0 0 5px rgba(59,130,246,0.05); }
-            50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.5), inset 0 0 10px rgba(59,130,246,0.1); }
-            100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2), inset 0 0 5px rgba(59,130,246,0.05); }
-        }
-        .core-pulse { animation: pulse-glow 3s infinite; }
-
-        .hologram {
-            position: relative;
-            overflow: hidden;
-        }
-        .hologram::before {
-            content: "";
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
-            animation: hologram-scan 4s infinite;
-            pointer-events: none;
-        }
-        @keyframes hologram-scan {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        .voice-bar {
-            width: 3px;
-            background: rgba(59, 130, 246, 0.7);
-            margin: 0 2px;
-            border-radius: 3px;
-            animation: voice-wave 1s infinite ease-in-out;
-        }
-        .voice-bar:nth-child(1) { animation-delay: 0s; }
-        .voice-bar:nth-child(2) { animation-delay: 0.12s; }
-        .voice-bar:nth-child(3) { animation-delay: 0.24s; }
-        .voice-bar:nth-child(4) { animation-delay: 0.36s; }
-        .voice-bar:nth-child(5) { animation-delay: 0.48s; }
-        @keyframes voice-wave {
-            0%, 100% { height: 5px; }
-            50% { height: 22px; }
-        }
-
-        .command-history {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .command-history.active { max-height: 280px; overflow-y: auto; }
-
-        .typing-indicator span {
-            display: inline-block;
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: #3b82f6;
-            margin: 0 3px;
-            animation: typing-bounce 1.4s infinite;
-        }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing-bounce {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-10px); opacity: 1; }
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.5); }
-
-        .glass {
-            background: rgba(15, 15, 20, 0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(59, 130, 246, 0.15);
-        }
-
-        .command-suggestion {
-            position: absolute;
-            bottom: 100%;
-            left: 0; right: 0;
-            background: rgba(10, 10, 15, 0.95);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 8px;
-            padding: 8px;
-            margin-bottom: 8px;
-            display: none;
-            z-index: 50;
-            backdrop-filter: blur(20px);
-        }
-        .command-suggestion.active { display: block; }
-
-        .glass-panel-solid {
-            background: rgba(15, 15, 20, 0.5);
-            border: 1px solid rgba(59, 130, 246, 0.1);
-        }
-
-        @keyframes file-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-        .file-uploading { animation: file-pulse 2s infinite; }
-
-        .file-info {
-            position: absolute;
-            bottom: 100%;
-            left: 0; right: 0;
-            background: rgba(10, 10, 15, 0.95);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
-            display: none;
-            z-index: 50;
-            backdrop-filter: blur(20px);
-        }
-        .file-info.active { display: block; }
-
-        @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
-
-        @keyframes msg-enter {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .msg-animate {
-            animation: msg-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        @keyframes status-blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        .status-blink { animation: status-blink 2s ease-in-out infinite; }
-
-        .input-glow-ring {
-            position: absolute;
-            inset: -1px;
-            border-radius: 7px;
-            background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(6,182,212,0.2), rgba(59,130,246,0.1));
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            pointer-events: none;
-            z-index: -1;
-        }
-        .input-wrapper:focus-within .input-glow-ring {
-            opacity: 1;
-        }
-
-        .neural-module {
-            transition: all 0.3s ease;
-        }
-        .neural-module:hover {
-            border-color: rgba(6, 182, 212, 0.4);
-            box-shadow: 0 0 20px rgba(59,130,246,0.1), inset 0 0 20px rgba(59,130,246,0.05);
-            transform: translateY(-1px);
-        }
-
-        @keyframes val-flash {
-            0% { color: #fff; }
-            100% { color: inherit; }
-        }
-        .val-flash { animation: val-flash 0.6s ease-out; }
-
-        @media (max-width: 1279px) {
-            .sidebar-mobile-toggle { display: flex !important; }
-            .sidebar-panel {
-                position: fixed;
-                left: 0; top: 0; bottom: 0;
-                z-index: 200;
-                transform: translateX(-100%);
-                transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .sidebar-panel.open { transform: translateX(0); }
-            .sidebar-overlay {
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.6);
-                z-index: 199;
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.3s;
-            }
-            .sidebar-overlay.visible {
-                opacity: 1;
-                pointer-events: all;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-
-        /* Smooth rotation */
-@keyframes spin-slow {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-.animate-spin-slow {
-    animation: spin-slow 6s linear infinite;
-}
-
-/* Reverse rotation */
-@keyframes spin-reverse {
-    from { transform: rotate(360deg); }
-    to { transform: rotate(0deg); }
-}
-.animate-spin-reverse {
-    animation: spin-reverse 10s linear infinite;
-}
-
-/* Energy pulse ring */
-@keyframes ping-slow {
-    0% { transform: scale(0.8); opacity: 0.5; }
-    70% { transform: scale(1.4); opacity: 0; }
-    100% { opacity: 0; }
-}
-.animate-ping-slow {
-    animation: ping-slow 2.5s infinite;
-}
-
-/* Core glow */
-@keyframes core-glow {
-    0% { box-shadow: 0 0 5px rgba(59,130,246,0.3); }
-    50% { box-shadow: 0 0 25px rgba(59,130,246,0.9); }
-    100% { box-shadow: 0 0 5px rgba(59,130,246,0.3); }
-}
-.core-glow {
-    animation: core-glow 2s infinite ease-in-out;
-}
-
-/* Subtle AI flicker */
-@keyframes flicker {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.85; }
-    52% { opacity: 1; }
-    70% { opacity: 0.9; }
-}
-.animate-flicker {
-    animation: flicker 2.5s infinite;
-}
     </style>
 </head>
 <body class="h-screen flex selection:bg-blue-500/30">
 
-    <div class="scanline"></div>
+    <!-- Boot Overlay -->
+    <div id="boot-overlay">
+        <div class="mb-6">
+            <div class="relative w-16 h-16 flex items-center justify-center">
+                <div class="absolute inset-0 animate-spin-slow flex items-center justify-center">
+                    <i data-lucide="orbit" class="w-14 h-14 text-blue-500/40"></i>
+                </div>
+                <i data-lucide="cpu" class="w-6 h-6 text-blue-400 animate-flicker relative z-10"></i>
+            </div>
+        </div>
+        <div id="boot-lines" class="text-center space-y-1 mb-2">
+            <div class="boot-line">[INIT] Neural pathway calibration...</div>
+            <div class="boot-line">[LOAD] Quantum processing modules...</div>
+            <div class="boot-line">[AUTH] Biometric verification: <span class="text-emerald-400">PASSED</span></div>
+            <div class="boot-line">[CONN] Secure uplink established...</div>
+            <div class="boot-line">[READY] NXr Core v3.0 online</div>
+        </div>
+        <div class="boot-progress"><div class="boot-bar" id="boot-bar"></div></div>
+    </div>
 
-    <div class="fixed inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(59,130,246,0.04),transparent_70%)] pointer-events-none"></div>
-    <div class="fixed inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(6,182,212,0.02),transparent_50%)] pointer-events-none"></div>
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Settings Overlay -->
+    <div class="settings-overlay" id="settingsOverlay"></div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="p-6 border-b border-blue-500/20 flex justify-between items-center">
+            <div>
+                <h2 class="font-orbitron text-sm tracking-widest text-white">CONFIGURATION</h2>
+                <p class="text-[9px] text-zinc-500 font-mono mt-1">SYS_SETTINGS > INTERFACE</p>
+            </div>
+            <button id="close-settings-btn" class="text-zinc-500 hover:text-red-400 transition-colors p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+            
+            <!-- Interface Settings -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold">
+                    <i data-lucide="monitor" class="w-3 h-3"></i> Interface
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-zinc-200">Scanline Effect</p>
+                        <p class="text-[10px] text-zinc-500 font-mono mt-0.5">CRT monitor overlay</p>
+                    </div>
+                    <div class="toggle-switch active" data-setting="scanline"></div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-zinc-200">Background Particles</p>
+                        <p class="text-[10px] text-zinc-500 font-mono mt-0.5">Ambient neural network</p>
+                    </div>
+                    <div class="toggle-switch active" data-setting="particles"></div>
+                </div>
+            </div>
+
+            <!-- Performance Settings -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold">
+                    <i data-lucide="cpu" class="w-3 h-3"></i> Performance
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-zinc-200">Response Speed</p>
+                        <p class="text-[10px] text-zinc-500 font-mono mt-0.5">Typewriter animation delay</p>
+                    </div>
+                    <select class="cyber-select" data-setting="typewriterSpeed">
+                        <option value="instant">Instant</option>
+                        <option value="fast">Fast</option>
+                        <option value="normal" selected>Normal</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Notifications Settings -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold">
+                    <i data-lucide="bell" class="w-3 h-3"></i> System
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-zinc-200">Toast Notifications</p>
+                        <p class="text-[10px] text-zinc-500 font-mono mt-0.5">System alerts & feedback</p>
+                    </div>
+                    <div class="toggle-switch active" data-setting="toasts"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-6 border-t border-zinc-800/50 mt-auto">
+            <div class="glass-panel-solid rounded-lg p-3 text-center">
+                <p class="text-[9px] text-zinc-500 font-mono tracking-widest">NXr CORE v3.0.7 BUILD 847</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Panel (Floating Dropdown) -->
+    <div class="history-panel" id="historyPanel">
+        <div class="p-4 border-b border-zinc-800 flex justify-between items-center">
+            <span class="text-[10px] font-mono text-blue-400 tracking-widest font-bold">DIRECTIVE LOG</span>
+            <button id="clear-history-btn" class="text-[10px] font-mono text-zinc-600 hover:text-red-400 transition-colors px-2 py-1 rounded hover:bg-zinc-800">CLEAR LOG</button>
+        </div>
+        <div id="history-panel-list" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+            <div class="text-center text-zinc-700 font-mono text-xs py-4">NO RECORDS</div>
+        </div>
+    </div>
+
+    <div class="scanline" id="scanline-effect"></div>
+    <div class="fixed inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(59,130,246,.04),transparent_70%)] pointer-events-none"></div>
+    <div class="fixed inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(6,182,212,.02),transparent_50%)] pointer-events-none"></div>
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- Sidebar -->
     <aside class="sidebar-panel w-80 border-r border-cyan-500/20 bg-black/40 backdrop-blur-2xl p-6 hidden xl:flex flex-col z-20 glass" id="sidebar">
         <div class="flex items-center gap-3 mb-8 group cursor-pointer">
             <div class="p-3 bg-blue-600/20 rounded-xl border border-blue-500/40 core-pulse">
-
-
-               <div class="relative w-14 h-14 flex items-center justify-center">
-
-    <!-- Outer Ring (slow) -->
-    <div class="absolute inset-0 flex items-center justify-center animate-spin-slow">
-        <i data-lucide="orbit" class="w-12 h-12 text-cyan-400 opacity-60"></i>
-    </div>
-
-    <!-- Inner Ring (reverse) -->
-    <div class="absolute inset-0 flex items-center justify-center animate-spin-reverse">
-        <i data-lucide="circle-dashed" class="w-9 h-9 text-blue-500/40"></i>
-    </div>
-
-    <!-- Energy Pulse Ring -->
-    <div class="absolute w-10 h-10 border border-blue-400/20 rounded-full animate-ping-slow"></div>
-
-    <!-- Core Glow -->
-    <div class="absolute w-6 h-6 rounded-full bg-blue-500/20 blur-md core-glow"></div>
-
-    <!-- Center Core -->
-    <i data-lucide="cpu" class="w-5 h-5 text-blue-400 relative z-10 animate-flicker"></i>
-
-</div>
-
+                <div class="relative w-14 h-14 flex items-center justify-center">
+                    <div class="absolute inset-0 flex items-center justify-center animate-spin-slow">
+                        <i data-lucide="orbit" class="w-12 h-12 text-cyan-400 opacity-60"></i>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center animate-spin-reverse">
+                        <i data-lucide="circle-dashed" class="w-9 h-9 text-blue-500/40"></i>
+                    </div>
+                    <div class="absolute w-10 h-10 border border-blue-400/20 rounded-full animate-ping-slow"></div>
+                    <div class="absolute w-6 h-6 rounded-full bg-blue-500/20 blur-md core-glow"></div>
+                    <i data-lucide="cpu" class="w-5 h-5 text-blue-400 relative z-10 animate-flicker"></i>
+                </div>
             </div>
             <div>
                 <h1 class="text-xl font-orbitron font-bold tracking-widest bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">NXr CORE</h1>
@@ -357,30 +345,21 @@
             <div class="space-y-3">
                 <p class="text-[9px] text-cyan-500/70 tracking-widest">NEURAL MODULES</p>
                 <div class="grid grid-cols-2 gap-2">
-                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer">
+                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer" data-module="synapse">
                         <i data-lucide="zap" class="w-4 h-4 mx-auto mb-1.5 text-cyan-400"></i>
                         <span class="text-[9px] block font-mono text-zinc-400">SYNAPSE BOOST</span>
                     </div>
-                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer">
+                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer" data-module="quantum">
                         <i data-lucide="shield" class="w-4 h-4 mx-auto mb-1.5 text-blue-400"></i>
                         <span class="text-[9px] block font-mono text-zinc-400">QUANTUM LOCK</span>
                     </div>
-                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer">
+                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer" data-module="memory">
                         <i data-lucide="database" class="w-4 h-4 mx-auto mb-1.5 text-zinc-400"></i>
                         <span class="text-[9px] block font-mono text-zinc-400">MEMORY CORE</span>
                     </div>
-                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer">
+                    <div class="neural-module glass p-2.5 rounded-lg text-center cursor-pointer" data-module="neurolink">
                         <i data-lucide="cpu" class="w-4 h-4 mx-auto mb-1.5 text-purple-400"></i>
                         <span class="text-[9px] block font-mono text-zinc-400">NEURO-LINK</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="space-y-3">
-                <p class="text-[9px] text-cyan-500/70 tracking-widest">RECENT ACTIVITY</p>
-                <div class="space-y-1.5" id="sidebar-history">
-                    <div class="text-[10px] font-mono text-zinc-600 py-1 px-2 rounded border border-transparent hover:border-zinc-800 hover:text-zinc-400 transition-colors cursor-pointer">
-                        <span class="text-zinc-700 mr-2">&gt;</span>system initialized
                     </div>
                 </div>
             </div>
@@ -398,17 +377,18 @@
                     <p class="text-xs font-bold truncate">Samarth[Iris]</p>
                     <p class="text-[9px] text-zinc-500 font-mono">LEVEL 5 ACCESS</p>
                 </div>
-                <button class="text-zinc-600 hover:text-zinc-400 transition-colors" aria-label="Settings">
+                <button class="text-zinc-600 hover:text-zinc-400 transition-colors settings-btn" aria-label="Settings">
                     <i data-lucide="settings" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
     </aside>
 
+    <!-- Main -->
     <main class="flex-1 flex flex-col relative min-w-0">
         <header class="h-14 border-b border-blue-500/10 flex items-center justify-between px-6 lg:px-8 bg-black/30 backdrop-blur-md z-10 shrink-0">
             <div class="flex items-center gap-4">
-                <button class="sidebar-mobile-toggle hidden text-zinc-400 hover:text-white transition-colors" id="menuToggle" aria-label="Toggle sidebar">
+                <button class="sidebar-mobile-toggle hidden text-zinc-400 hover:text-white transition-colors p-1.5 rounded-md" id="menuToggle" aria-label="Toggle sidebar">
                     <i data-lucide="panel-left" class="w-5 h-5"></i>
                 </button>
                 <div class="flex items-center gap-2 text-blue-400/80 text-[10px] font-mono tracking-widest">
@@ -420,45 +400,46 @@
                     <span>LATENCY: <span id="latency-val">14</span>ms</span>
                     <span>LOC: 127.0.0.1</span>
                     <span>SEC: <span class="text-emerald-500">MAX</span></span>
+                    <span id="sys-clock" class="text-zinc-700"></span>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <button id="sound-toggle" class="text-zinc-500 hover:text-white transition-colors p-1" aria-label="Toggle sound">
+            <div class="flex items-center gap-2">
+                <button id="sound-toggle" class="header-action text-zinc-500 hover:text-white p-1.5" aria-label="Toggle sound">
                     <i data-lucide="volume-2" class="w-4 h-4"></i>
                 </button>
-                <button class="text-zinc-500 hover:text-white transition-colors p-1" aria-label="Network">
+                <button class="header-action text-zinc-500 hover:text-white p-1.5" aria-label="Network">
                     <i data-lucide="wifi" class="w-4 h-4"></i>
                 </button>
-                <button class="text-blue-500/70 hover:text-blue-400 transition-colors p-1" aria-label="Security">
+                <button class="header-action text-blue-500/70 hover:text-blue-400 p-1.5" aria-label="Security">
                     <i data-lucide="shield" class="w-4 h-4"></i>
                 </button>
-                <button id="clear-chat-btn" class="text-zinc-500 hover:text-red-400 transition-colors p-1" aria-label="Clear chat">
+                <button id="history-toggle-btn" class="header-action text-zinc-500 hover:text-white p-1.5" aria-label="Command History">
+                    <i data-lucide="history" class="w-4 h-4"></i>
+                </button>
+                <button id="clear-chat-btn" class="header-action text-zinc-500 hover:text-red-400 p-1.5" aria-label="Clear chat">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
-                <button class="text-zinc-500 hover:text-white transition-colors p-1" aria-label="Settings">
+                <button class="header-action text-zinc-500 hover:text-white settings-btn p-1.5" aria-label="Settings">
                     <i data-lucide="settings" class="w-4 h-4"></i>
                 </button>
-                
             </div>
         </header>
 
-        <div id="chat-container" class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar">
+        <div id="chat-container" class="flex-1 overflow-y-auto p-6 lg:p-12 custom-scrollbar relative">
+            <canvas id="particles-canvas"></canvas>
             <div class="max-w-4xl mx-auto space-y-6" id="chat-feed">
                 <div id="welcome-banner" class="border-y border-blue-500/10 py-12 text-center space-y-5">
                     <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 core-pulse mb-2">
                         <div class="relative w-10 h-10 flex items-center justify-center">
-
-    <!-- Rotating ring -->
-    <div class="absolute inset-0 animate-spin-slow flex items-center justify-center">
-        <i data-lucide="circle-dashed" class="w-10 h-10 text-blue-500/30"></i>
-    </div>
-
-    <!-- Center -->
-    <i data-lucide="hexagon" class="w-8 h-8 text-blue-400 relative z-10"></i>
-
-</div>
+                            <div class="absolute inset-0 animate-spin-slow flex items-center justify-center">
+                                <i data-lucide="circle-dashed" class="w-10 h-10 text-blue-500/30"></i>
+                            </div>
+                            <i data-lucide="hexagon" class="w-8 h-8 text-blue-400 relative z-10"></i>
+                        </div>
                     </div>
-                    <h2 class="font-orbitron text-2xl md:text-3xl tracking-[0.4em] text-white">> NXr_CORE :: ONLINE</h2>
+                    <h2 class="font-orbitron text-2xl md:text-3xl tracking-[0.4em] text-white">
+                        <span class="welcome-title" id="welcome-title"></span>
+                    </h2>
                     <p class="text-zinc-500 font-mono text-xs uppercase tracking-widest max-w-md mx-auto leading-relaxed">
                         System Status: <span class="text-emerald-400">Optimal</span>
                         <span class="mx-2 text-zinc-700">|</span>
@@ -467,10 +448,10 @@
                         Security: <span class="text-cyan-400">Maximum</span>
                     </p>
                     <div class="flex flex-wrap justify-center gap-2 pt-2">
-                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 transition-all cursor-pointer" data-cmd="status">status</button>
-                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 transition-all cursor-pointer" data-cmd="scan">scan</button>
-                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 transition-all cursor-pointer" data-cmd="analyze">analyze</button>
-                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 transition-all cursor-pointer" data-cmd="help">help</button>
+                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all cursor-pointer" data-cmd="status">status</button>
+                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all cursor-pointer" data-cmd="scan">scan</button>
+                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all cursor-pointer" data-cmd="analyze">analyze</button>
+                        <button class="quick-cmd glass px-4 py-2 rounded-lg text-[11px] font-mono text-zinc-400 hover:text-blue-300 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all cursor-pointer" data-cmd="help">help</button>
                     </div>
                 </div>
             </div>
@@ -481,13 +462,9 @@
                 <div id="voice-indicator" class="hidden mb-4 flex justify-center">
                     <div class="glass px-5 py-2.5 rounded-full flex items-center gap-3">
                         <div class="flex items-end h-6">
-                            <div class="voice-bar"></div>
-                            <div class="voice-bar"></div>
-                            <div class="voice-bar"></div>
-                            <div class="voice-bar"></div>
-                            <div class="voice-bar"></div>
+                            <div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div>
                         </div>
-                        <span class="text-xs font-mono text-blue-400 tracking-wider">Listening...</span>
+                        <span class="text-xs font-mono text-blue-400 tracking-wider" id="voice-status-text">Listening...</span>
                     </div>
                 </div>
 
@@ -505,9 +482,6 @@
                     <div class="input-glow-ring"></div>
                     <div class="relative flex items-center gap-2 bg-zinc-950/90 border border-blue-500/15 p-2.5 rounded-lg shadow-2xl">
                         <div class="flex gap-1 px-1">
-                            <button id="command-history-btn" class="text-zinc-600 hover:text-blue-400 transition-colors p-1.5 rounded-md hover:bg-zinc-800/50" aria-label="Command history">
-                                <i data-lucide="terminal" class="w-4 h-4"></i>
-                            </button>
                             <button id="voice-btn" class="text-zinc-600 hover:text-blue-400 transition-colors p-1.5 rounded-md hover:bg-zinc-800/50" aria-label="Voice input">
                                 <i data-lucide="mic" class="w-4 h-4"></i>
                             </button>
@@ -518,14 +492,7 @@
                         </div>
 
                         <div class="relative flex-1">
-                            <input
-                                type="text"
-                                id="user-input"
-                                placeholder="Type your directive..."
-                                class="w-full bg-transparent border-none outline-none text-blue-100 px-2 h-9 placeholder:text-zinc-700 font-mono text-sm tracking-wider"
-                                autocomplete="off"
-                                spellcheck="false"
-                            >
+                            <input type="text" id="user-input" placeholder="Type your directive..." class="w-full bg-transparent border-none outline-none text-blue-100 px-2 h-9 placeholder:text-zinc-700 font-mono text-sm tracking-wider" autocomplete="off" spellcheck="false">
                             <div id="command-suggestion" class="command-suggestion">
                                 <div class="text-[10px] font-mono text-zinc-500 tracking-wider mb-2">SUGGESTED DIRECTIVES</div>
                                 <div id="suggestion-list" class="space-y-0.5"></div>
@@ -537,11 +504,6 @@
                             <i data-lucide="chevrons-right" class="w-3.5 h-3.5"></i>
                         </button>
                     </div>
-
-                    <div id="command-history" class="command-history mt-2 glass rounded-lg p-3">
-                        <div class="text-[10px] font-mono text-zinc-500 tracking-wider mb-2">COMMAND HISTORY</div>
-                        <div id="history-list" class="space-y-1 text-xs font-mono text-zinc-500"></div>
-                    </div>
                 </div>
 
                 <p class="text-[9px] text-zinc-700 font-mono text-center mt-3 tracking-wider">NXr Core v3.0 — Quantum Neural Processing Engine</p>
@@ -550,566 +512,603 @@
     </main>
 
     <script>
+    lucide.createIcons();
+
+    // === DOM References ===
+    const $ = id => document.getElementById(id);
+    const chatFeed = $('chat-feed'), chatContainer = $('chat-container'), userInput = $('user-input');
+    const sendBtn = $('send-btn'), voiceBtn = $('voice-btn'), voiceIndicator = $('voice-indicator');
+    const suggestionList = $('suggestion-list'), soundToggle = $('sound-toggle');
+    const commandSuggestion = $('command-suggestion');
+    const neuralCanvas = $('neural-canvas'), ctx = neuralCanvas.getContext('2d');
+    const fileBtn = $('file-btn'), fileInput = $('file-input'), fileInfo = $('file-info');
+    const fileListEl = $('file-list'), clearFilesBtn = $('clear-files');
+    const clearChatBtn = $('clear-chat-btn'), welcomeBanner = $('welcome-banner');
+    const sidebar = $('sidebar'), sidebarOverlay = $('sidebarOverlay'), menuToggle = $('menuToggle');
+    const welcomeTitle = $('welcome-title');
+    const sysClock = $('sys-clock'), voiceStatusText = $('voice-status-text');
+    const particlesCanvas = $('particles-canvas'), pCtx = particlesCanvas.getContext('2d');
+    const settingsOverlay = $('settingsOverlay'), settingsPanel = $('settingsPanel');
+    const historyToggleBtn = $('history-toggle-btn'), historyPanel = $('historyPanel'), historyPanelList = $('history-panel-list'), clearHistoryBtn = $('clear-history-btn');
+
+    // === App State ===
+    let cmdHistory = [], historyIndex = -1, isVoiceActive = false, soundEnabled = true;
+    let selectedFiles = [], isProcessing = false, msgCount = 0;
+    let currentTypewriter = null;
+    let particlesActive = true; 
+    
+    const appSettings = {
+        scanline: true,
+        particles: true,
+        typewriterSpeed: 'normal',
+        toasts: true
+    };
+
+    // === Boot Sequence ===
+    (function bootSequence() {
+        const lines = document.querySelectorAll('.boot-line');
+        const bar = $('boot-bar');
+        const overlay = $('boot-overlay');
+        let progress = 0, lineIdx = 0;
+
+        function nextLine() {
+            if (lineIdx < lines.length) {
+                lines[lineIdx].classList.add('visible');
+                lineIdx++;
+                progress = Math.min(100, (lineIdx / lines.length) * 100);
+                bar.style.width = progress + '%';
+                setTimeout(nextLine, 350 + Math.random() * 200);
+            } else {
+                bar.style.width = '100%';
+                setTimeout(() => {
+                    overlay.classList.add('done');
+                    setTimeout(typeWelcomeTitle, 300);
+                }, 400);
+            }
+        }
+        setTimeout(nextLine, 500);
+    })();
+
+    // === Welcome Title Typing ===
+    function typeWelcomeTitle() {
+        const text = '> NXr_CORE :: ONLINE';
+        let i = 0;
+        welcomeTitle.textContent = '';
+        function type() {
+            if (i < text.length) {
+                welcomeTitle.textContent += text[i]; i++;
+                setTimeout(type, 45 + Math.random() * 30);
+            } else { welcomeTitle.classList.add('done'); }
+        }
+        type();
+    }
+
+    // === System Clock ===
+    function updateClock() {
+        const now = new Date();
+        const t = now.toLocaleTimeString('en-US', { hour12: false });
+        const d = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+        if (sysClock) sysClock.textContent = `${d} ${t}`;
+    }
+    updateClock(); setInterval(updateClock, 1000);
+
+    // === Settings Logic ===
+    function openSettings() {
+        settingsPanel.classList.add('open');
+        settingsOverlay.classList.add('visible');
+        closeHistoryPanel();
+    }
+
+    function closeSettings() {
+        settingsPanel.classList.remove('open');
+        settingsOverlay.classList.remove('visible');
+    }
+
+    document.querySelectorAll('.settings-btn').forEach(btn => btn.addEventListener('click', openSettings));
+    $('close-settings-btn').addEventListener('click', closeSettings);
+    settingsOverlay.addEventListener('click', closeSettings);
+
+    document.querySelectorAll('.toggle-switch').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const setting = toggle.dataset.setting;
+            const isActive = toggle.classList.toggle('active');
+            appSettings[setting] = isActive;
+            applySettings();
+        });
+    });
+
+    document.querySelectorAll('.cyber-select').forEach(select => {
+        select.addEventListener('change', (e) => {
+            appSettings[e.target.dataset.setting] = e.target.value;
+            applySettings();
+        });
+    });
+
+    function applySettings() {
+        const scanlineEl = $('scanline-effect');
+        scanlineEl.style.display = appSettings.scanline ? 'block' : 'none';
+        particlesActive = appSettings.particles;
+        particlesCanvas.style.opacity = particlesActive ? '1' : '0';
+    }
+
+    // === History Panel Logic ===
+    function toggleHistoryPanel() {
+        const isOpen = historyPanel.classList.contains('open');
+        if (isOpen) {
+            closeHistoryPanel();
+        } else {
+            renderHistoryPanel();
+            historyPanel.classList.add('open');
+            historyToggleBtn.classList.add('active');
+        }
+    }
+
+    function closeHistoryPanel() {
+        historyPanel.classList.remove('open');
+        historyToggleBtn.classList.remove('active');
+    }
+
+    // FIX: Added e.stopPropagation() to prevent the global click listener from interfering
+    historyToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleHistoryPanel();
+    });
+
+    clearHistoryBtn.addEventListener('click', () => {
+        cmdHistory = [];
+        historyIndex = -1;
+        renderHistoryPanel();
+        showToast('Command history cleared', 'success');
+    });
+
+    function renderHistoryPanel() {
+        historyPanelList.innerHTML = '';
+        if (cmdHistory.length === 0) {
+            historyPanelList.innerHTML = '<div class="text-center text-zinc-700 font-mono text-xs py-4">NO RECORDS</div>';
+            return;
+        }
+        cmdHistory.forEach((cmd, index) => {
+            const div = document.createElement('div');
+            div.className = 'p-2 rounded-md text-xs font-mono text-zinc-400 hover:bg-zinc-800/60 hover:text-blue-400 cursor-pointer transition-colors flex justify-between items-center';
+            div.innerHTML = `<span class="truncate mr-2"><span class="text-zinc-700 mr-2">${String(index + 1).padStart(2, '0')}:</span>${escapeHtml(cmd)}</span><i data-lucide="corner-down-left" class="w-3 h-3 text-zinc-700"></i>`;
+            div.addEventListener('click', () => {
+                userInput.value = cmd;
+                sendBtn.disabled = false;
+                closeHistoryPanel();
+                userInput.focus();
+            });
+            historyPanelList.appendChild(div);
+        });
         lucide.createIcons();
+    }
 
-        const chatFeed = document.getElementById('chat-feed');
-        const chatContainer = document.getElementById('chat-container');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const voiceBtn = document.getElementById('voice-btn');
-        const voiceIndicator = document.getElementById('voice-indicator');
-        const commandHistoryBtn = document.getElementById('command-history-btn');
-        const commandHistory = document.getElementById('command-history');
-        const historyList = document.getElementById('history-list');
-        const commandSuggestion = document.getElementById('command-suggestion');
-        const suggestionList = document.getElementById('suggestion-list');
-        const soundToggle = document.getElementById('sound-toggle');
-        const neuralCanvas = document.getElementById('neural-canvas');
-        const ctx = neuralCanvas.getContext('2d');
-        const fileBtn = document.getElementById('file-btn');
-        const fileInput = document.getElementById('file-input');
-        const fileInfo = document.getElementById('file-info');
-        const fileListEl = document.getElementById('file-list');
-        const clearFilesBtn = document.getElementById('clear-files');
-        const clearChatBtn = document.getElementById('clear-chat-btn');
-        const welcomeBanner = document.getElementById('welcome-banner');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebarHistory = document.getElementById('sidebar-history');
+    // === Toast System ===
+    function showToast(message, type = 'info', duration = 3500) {
+        if (!appSettings.toasts) return;
+        const container = $('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<div class="toast-dot ${type}"></div><span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('out');
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
 
-        let commandHistoryArray = [];
-        let isVoiceActive = false;
-        let soundEnabled = true;
-        let selectedFiles = [];
-        let isProcessing = false;
-        let messageCount = 0;
+    // === Ambient Particles ===
+    function initParticles() {
+        const dpr = window.devicePixelRatio || 1;
+        let w, h;
+        const particles = [];
+        const COUNT = 35;
 
-        // === Neural Network Canvas ===
-        function initNeuralNetwork() {
-            const dpr = window.devicePixelRatio || 1;
-            const rect = neuralCanvas.getBoundingClientRect();
-            neuralCanvas.width = rect.width * dpr;
-            neuralCanvas.height = rect.height * dpr;
-            ctx.scale(dpr, dpr);
-            const width = rect.width;
-            const height = rect.height;
+        function resize() {
+            const rect = chatContainer.getBoundingClientRect();
+            w = rect.width; h = rect.height;
+            particlesCanvas.width = w * dpr;
+            particlesCanvas.height = h * dpr;
+            particlesCanvas.style.width = w + 'px';
+            particlesCanvas.style.height = h + 'px';
+            pCtx.setTransform(1, 0, 0, 1, 0, 0);
+            pCtx.scale(dpr, dpr);
+        }
+        resize();
 
-            const nodes = [];
-            const connections = [];
+        for (let i = 0; i < COUNT; i++) {
+            particles.push({
+                x: Math.random() * w, y: Math.random() * h,
+                vx: (Math.random() - .5) * .15, vy: (Math.random() - .5) * .15,
+                r: Math.random() * 1.5 + .5, a: Math.random() * .3 + .05
+            });
+        }
 
-            for (let i = 0; i < 18; i++) {
-                nodes.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    radius: Math.random() * 2.5 + 1.5,
-                    vx: (Math.random() - 0.5) * 0.4,
-                    vy: (Math.random() - 0.5) * 0.4,
-                    pulse: Math.random() * Math.PI * 2
-                });
+        function draw() {
+            pCtx.clearRect(0, 0, w, h);
+            
+            if (!particlesActive) {
+                requestAnimationFrame(draw); return;
             }
 
-            for (let i = 0; i < nodes.length; i++) {
-                for (let j = i + 1; j < nodes.length; j++) {
-                    if (Math.random() < 0.22) {
-                        connections.push({ from: i, to: j, pulse: Math.random() * Math.PI * 2 });
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+                if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+                pCtx.beginPath(); pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                pCtx.fillStyle = `rgba(59,130,246,${p.a})`; pCtx.fill();
+            });
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        const alpha = (1 - dist / 120) * 0.06;
+                        pCtx.strokeStyle = `rgba(59,130,246,${alpha})`; pCtx.lineWidth = .5;
+                        pCtx.beginPath(); pCtx.moveTo(particles[i].x, particles[i].y);
+                        pCtx.lineTo(particles[j].x, particles[j].y); pCtx.stroke();
                     }
                 }
             }
+            requestAnimationFrame(draw);
+        }
+        draw();
+        window.addEventListener('resize', resize);
+    }
+    initParticles();
 
-            let time = 0;
+    // === Neural Network Canvas ===
+    function initNeuralNetwork() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = neuralCanvas.getBoundingClientRect();
+        neuralCanvas.width = rect.width * dpr; neuralCanvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        const width = rect.width, height = rect.height;
+        const nodes = [], connections = [];
 
-            function animate() {
-                ctx.clearRect(0, 0, width, height);
-                time += 0.02;
-
-                connections.forEach(conn => {
-                    const from = nodes[conn.from];
-                    const to = nodes[conn.to];
-                    const dx = to.x - from.x;
-                    const dy = to.y - from.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    const alpha = Math.max(0, 0.25 - dist * 0.001) * (0.6 + 0.4 * Math.sin(time * 1.5 + conn.pulse));
-
-                    ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
-                    ctx.lineWidth = 0.8;
-                    ctx.beginPath();
-                    ctx.moveTo(from.x, from.y);
-                    ctx.lineTo(to.x, to.y);
-                    ctx.stroke();
-
-                    const t = (Math.sin(time + conn.pulse) * 0.5 + 0.5);
-                    const px = from.x + dx * t;
-                    const py = from.y + dy * t;
-                    ctx.fillStyle = `rgba(6, 182, 212, ${alpha * 1.5})`;
-                    ctx.beginPath();
-                    ctx.arc(px, py, 1.2, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-
-                nodes.forEach(node => {
-                    node.x += node.vx;
-                    node.y += node.vy;
-                    node.pulse += 0.03;
-
-                    if (node.x < 5 || node.x > width - 5) node.vx *= -1;
-                    if (node.y < 5 || node.y > height - 5) node.vy *= -1;
-                    node.x = Math.max(5, Math.min(width - 5, node.x));
-                    node.y = Math.max(5, Math.min(height - 5, node.y));
-
-                    const glowAlpha = 0.5 + 0.3 * Math.sin(node.pulse);
-                    const glowRadius = node.radius + 4;
-
-                    const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowRadius);
-                    grad.addColorStop(0, `rgba(59, 130, 246, ${glowAlpha * 0.3})`);
-                    grad.addColorStop(1, 'rgba(59, 130, 246, 0)');
-                    ctx.fillStyle = grad;
-                    ctx.beginPath();
-                    ctx.arc(node.x, node.y, glowRadius, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.fillStyle = `rgba(140, 180, 255, ${glowAlpha})`;
-                    ctx.beginPath();
-                    ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-
-                requestAnimationFrame(animate);
+        for (let i = 0; i < 18; i++) {
+            nodes.push({ x: Math.random() * width, y: Math.random() * height, radius: Math.random() * 2.5 + 1.5, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4, pulse: Math.random() * Math.PI * 2 });
+        }
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                if (Math.random() < .22) connections.push({ from: i, to: j, pulse: Math.random() * Math.PI * 2 });
             }
+        }
 
-            animate();
-
-            window.addEventListener('resize', () => {
-                const newRect = neuralCanvas.getBoundingClientRect();
-                neuralCanvas.width = newRect.width * dpr;
-                neuralCanvas.height = newRect.height * dpr;
-                ctx.scale(dpr, dpr);
+        let time = 0;
+        function animate() {
+            ctx.clearRect(0, 0, width, height); time += .02;
+            connections.forEach(conn => {
+                const from = nodes[conn.from], to = nodes[conn.to];
+                const dx = to.x - from.x, dy = to.y - from.y, dist = Math.sqrt(dx * dx + dy * dy);
+                const alpha = Math.max(0, .25 - dist * .001) * (.6 + .4 * Math.sin(time * 1.5 + conn.pulse));
+                ctx.strokeStyle = `rgba(59,130,246,${alpha})`; ctx.lineWidth = .8;
+                ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+                const t = (Math.sin(time + conn.pulse) * .5 + .5);
+                ctx.fillStyle = `rgba(6,182,212,${alpha * 1.5})`;
+                ctx.beginPath(); ctx.arc(from.x + dx * t, from.y + dy * t, 1.2, 0, Math.PI * 2); ctx.fill();
             });
+            nodes.forEach(node => {
+                node.x += node.vx; node.y += node.vy; node.pulse += .03;
+                if (node.x < 5 || node.x > width - 5) node.vx *= -1;
+                if (node.y < 5 || node.y > height - 5) node.vy *= -1;
+                node.x = Math.max(5, Math.min(width - 5, node.x));
+                node.y = Math.max(5, Math.min(height - 5, node.y));
+                const ga = .5 + .3 * Math.sin(node.pulse), gr = node.radius + 4;
+                const grad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, gr);
+                grad.addColorStop(0, `rgba(59,130,246,${ga * .3})`); grad.addColorStop(1, 'rgba(59,130,246,0)');
+                ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(node.x, node.y, gr, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = `rgba(140,180,255,${ga})`; ctx.beginPath(); ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2); ctx.fill();
+            });
+            requestAnimationFrame(animate);
         }
+        animate();
+        window.addEventListener('resize', () => {
+            const r = neuralCanvas.getBoundingClientRect();
+            neuralCanvas.width = r.width * dpr; neuralCanvas.height = r.height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        });
+    }
+    initNeuralNetwork();
 
-        initNeuralNetwork();
+    // === Telemetry ===
+    setInterval(() => {
+        const cpuEl = $('cpu-val'), memEl = $('mem-val'), latEl = $('latency-val');
+        const cpu = Math.floor(Math.random() * 30) + 10, mem = Math.floor(Math.random() * 20) + 40, lat = Math.floor(Math.random() * 10) + 8;
+        cpuEl.textContent = cpu; memEl.textContent = mem; if (latEl) latEl.textContent = lat;
+        cpuEl.classList.remove('val-flash'); memEl.classList.remove('val-flash'); void cpuEl.offsetWidth;
+        cpuEl.classList.add('val-flash'); memEl.classList.add('val-flash');
+    }, 3000);
 
-        // === Telemetry ===
-        setInterval(() => {
-            const cpuEl = document.getElementById('cpu-val');
-            const memEl = document.getElementById('mem-val');
-            const latEl = document.getElementById('latency-val');
+    // === Commands & Responses ===
+    const commands = [
+        { name:'scan', desc:'Scan network for vulnerabilities' }, { name:'encrypt', desc:'Encrypt data stream with quantum keys' },
+        { name:'analyze', desc:'Analyze system performance metrics' }, { name:'optimize', desc:'Optimize neural pathway efficiency' },
+        { name:'connect', desc:'Establish secure external connection' }, { name:'status', desc:'Display full system status report' },
+        { name:'help', desc:'Display all available directives' }, { name:'decrypt', desc:'Decrypt received data stream' },
+        { name:'trace', desc:'Trace incoming signal origin' }, { name:'deploy', desc:'Deploy neural module update' }
+    ];
 
-            const cpu = Math.floor(Math.random() * 30) + 10;
-            const mem = Math.floor(Math.random() * 20) + 40;
-            const lat = Math.floor(Math.random() * 10) + 8;
+    const responses = {
+        'scan': `Initiating deep network scan...\n\nScanning 1,247 nodes across 12 subnets...\n\n[████████████████████] 100%\n\nResults:\n  • 1,244 nodes: Secure\n  • 2 nodes: Minor anomalies detected\n  • 1 node: Potential vulnerability (Port 8443)\n\nRecommendation: Apply security patch v2.4.1 to Node-Alpha-7.\nThreat level: LOW\nConfidence: 97.3%`,
+        'encrypt': `Activating quantum encryption protocol...\n\nKey generation: 4096-bit quantum-resistant\nAlgorithm: Kyber-1024 + X25519 hybrid\n\n[████████████████████] 100%\n\nData stream secured. All neural pathways now encrypted.\nKey rotation: Every 60 seconds\nIntrusion resistance: 99.97%`,
+        'analyze': `System analysis complete.\n\nCPU Efficiency:    94.2%  ████████████████░\nMemory Allocation: 78.1%  █████████████░░░░\nNeural Stability:  99.8%  ██████████████████\nQuantum Coherence: 96.4%  ████████████████░\nThermal Output:    42.3°C ████████████░░░░░\n\nAll systems operating within optimal parameters.\nNext maintenance window: 72 hours.`,
+        'optimize': `Optimizing neural pathways...\n\nRecalibrating 847 synaptic connections...\nCompressing redundant data streams...\nRebalancing quantum processing threads...\n\n[████████████████████] 100%\n\nResults:\n  • Processing speed: +23.7%\n  • Energy consumption: -12.4%\n  • Latency reduction: -8.2ms\n  • Memory efficiency: +15.1%\n\nOptimization complete. System performing above baseline.`,
+        'connect': `Establishing secure connection...\n\nTarget: Server-Alpha-7\nProtocol: QNET-256\nAuthentication: Biometric + Quantum Key\n\nHandshake: [████████████████████] Complete\n\nConnection established.\n  • Data transfer rate: 4.2 TB/s\n  • Encryption: Active\n  • Latency: 3ms\n  • Uptime SLA: 99.999%`,
+        'status': `╔══════════════════════════════════╗\n║     NXr CORE — STATUS REPORT     ║\n╠══════════════════════════════════╣\n║                                  ║\n║  Neural Link:    99.8% STABLE    ║\n║  Security:       MAXIMUM         ║\n║  Processing:     QUANTUM MODE    ║\n║  Uptime:         14d 07h 32m    ║\n║  Active Threads: 2,847           ║\n║  Memory:         78.1% USED      ║\n║  Temperature:    42.3°C          ║\n║  Threat Level:   NONE            ║\n║                                  ║\n╚══════════════════════════════════╝\n\nAll systems nominal. No action required.`,
+        'help': `Available Directives:\n\n  scan      — Scan network for vulnerabilities\n  encrypt   — Encrypt data stream with quantum keys\n  decrypt   — Decrypt received data stream\n  analyze   — Analyze system performance metrics\n  optimize  — Optimize neural pathway efficiency\n  connect   — Establish secure external connection\n  trace     — Trace incoming signal origin\n  deploy    — Deploy neural module update\n  status    — Display full system status report\n  help      — Display this help message\n\nKeyboard Shortcuts:\n  ↑/↓       — Navigate command history\n  Enter     — Execute command\n  Esc       — Close panels\n\nVoice Input:\n  Click the microphone icon for voice directives.`,
+        'decrypt': `Decrypting data stream...\n\nAnalyzing encryption layer... AES-256-GCM detected.\nQuantum key extraction: [████████████████████] Complete\n\nDecryption successful.\n  • Original size: 2.4 GB\n  • Content type: Neural matrix data\n  • Integrity check: PASSED\n  • Timestamp: ${new Date().toISOString()}`,
+        'trace': `Tracing signal origin...\n\nHops: 7 | Protocols: QNET → TOR → Mesh\n\n[████████████████████] Complete\n\nTrace Results:\n  • Origin: Sector-9, Node-47\n  • Distance: 2,847 km\n  • Relay nodes: 7\n  • Anonymization: Triple-layer\n  • Confidence: 94.1%\n\nSignal authenticated. Source is friendly.`,
+        'deploy': `Deploying neural module update...\n\nModule: NXr-Patch-v3.0.7\nSize: 847 MB\nChanges: 23 improvements, 4 security fixes\n\nBacking up current state...\n[████████████████████] Complete\n\nApplying update...\n[████████████████████] Complete\n\nVerifying integrity... PASSED\nRestarting neural threads... DONE\n\nDeployment successful. All systems upgraded.`
+    };
 
-            cpuEl.innerText = cpu;
-            memEl.innerText = mem;
-            if (latEl) latEl.innerText = lat;
+    // === Utilities ===
+    function escapeHtml(t) { const m = { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }; return t.replace(/[&<>"']/g, c => m[c]); }
+    function formatSize(b) { if (!b) return '0 B'; const k = 1024, s = ['B','KB','MB','GB']; const i = Math.floor(Math.log(b) / Math.log(k)); return (b / Math.pow(k, i)).toFixed(1) + ' ' + s[i]; }
+    function scrollToBottom() { chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' }); }
+    function hideWelcome() { if (welcomeBanner) welcomeBanner.style.display = 'none'; }
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-            cpuEl.classList.remove('val-flash');
-            memEl.classList.remove('val-flash');
-            void cpuEl.offsetWidth;
-            cpuEl.classList.add('val-flash');
-            memEl.classList.add('val-flash');
-        }, 3000);
+    // === Typewriter Effect ===
+    function typewriterEffect(preEl, text) {
+        let speed = 6;
+        if (appSettings.typewriterSpeed === 'fast') speed = 2;
+        if (appSettings.typewriterSpeed === 'instant') speed = 0;
 
-        // === Commands ===
-        const commands = [
-            { name: 'scan', desc: 'Scan network for vulnerabilities' },
-            { name: 'encrypt', desc: 'Encrypt data stream with quantum keys' },
-            { name: 'analyze', desc: 'Analyze system performance metrics' },
-            { name: 'optimize', desc: 'Optimize neural pathway efficiency' },
-            { name: 'connect', desc: 'Establish secure external connection' },
-            { name: 'status', desc: 'Display full system status report' },
-            { name: 'help', desc: 'Display all available directives' },
-            { name: 'decrypt', desc: 'Decrypt received data stream' },
-            { name: 'trace', desc: 'Trace incoming signal origin' },
-            { name: 'deploy', desc: 'Deploy neural module update' }
-        ];
+        return new Promise(resolve => {
+            preEl.textContent = '';
+            preEl.classList.add('tw-cursor');
+            let i = 0;
+            currentTypewriter = { preEl, text, skipped: false };
 
-        const responses = {
-            'scan': `Initiating deep network scan...\n\nScanning 1,247 nodes across 12 subnets...\n\n[████████████████████] 100%\n\nResults:\n  • 1,244 nodes: Secure\n  • 2 nodes: Minor anomalies detected\n  • 1 node: Potential vulnerability (Port 8443)\n\nRecommendation: Apply security patch v2.4.1 to Node-Alpha-7.\nThreat level: LOW\nConfidence: 97.3%`,
-
-            'encrypt': `Activating quantum encryption protocol...\n\nKey generation: 4096-bit quantum-resistant\nAlgorithm: Kyber-1024 + X25519 hybrid\n\n[████████████████████] 100%\n\nData stream secured. All neural pathways now encrypted.\nKey rotation: Every 60 seconds\nIntrusion resistance: 99.97%`,
-
-            'analyze': `System analysis complete.\n\nCPU Efficiency:    94.2%  ████████████████░\nMemory Allocation: 78.1%  █████████████░░░░\nNeural Stability:  99.8%  ██████████████████\nQuantum Coherence: 96.4%  ████████████████░\nThermal Output:    42.3°C ████████████░░░░░\n\nAll systems operating within optimal parameters.\nNext maintenance window: 72 hours.`,
-
-            'optimize': `Optimizing neural pathways...\n\nRecalibrating 847 synaptic connections...\nCompressing redundant data streams...\nRebalancing quantum processing threads...\n\n[████████████████████] 100%\n\nResults:\n  • Processing speed: +23.7%\n  • Energy consumption: -12.4%\n  • Latency reduction: -8.2ms\n  • Memory efficiency: +15.1%\n\nOptimization complete. System performing above baseline.`,
-
-            'connect': `Establishing secure connection...\n\nTarget: Server-Alpha-7\nProtocol: QNET-256\nAuthentication: Biometric + Quantum Key\n\nHandshake: [████████████████████] Complete\n\nConnection established.\n  • Data transfer rate: 4.2 TB/s\n  • Encryption: Active\n  • Latency: 3ms\n  • Uptime SLA: 99.999%`,
-
-            'status': `╔══════════════════════════════════╗\n║     NXr CORE — STATUS REPORT      ║\n╠══════════════════════════════════╣\n║                                  ║\n║  Neural Link:    99.8% STABLE    ║\n║  Security:       MAXIMUM         ║\n║  Processing:     QUANTUM MODE    ║\n║  Uptime:         14d 07h 32m    ║\n║  Active Threads: 2,847           ║\n║  Memory:         78.1% USED      ║\n║  Temperature:    42.3°C          ║\n║  Threat Level:   NONE            ║\n║                                  ║\n╚══════════════════════════════════╝\n\nAll systems nominal. No action required.`,
-
-            'help': `Available Directives:\n\n  scan      — Scan network for vulnerabilities\n  encrypt   — Encrypt data stream with quantum keys\n  decrypt   — Decrypt received data stream\n  analyze   — Analyze system performance metrics\n  optimize  — Optimize neural pathway efficiency\n  connect   — Establish secure external connection\n  trace     — Trace incoming signal origin\n  deploy    — Deploy neural module update\n  status    — Display full system status report\n  help      — Display this help message\n\nFile Operations:\n  Click the paperclip icon to upload files.\n  Files are processed with quantum encryption.\n\nVoice Input:\n  Click the microphone icon for voice directives.`,
-
-            'decrypt': `Decrypting data stream...\n\nAnalyzing encryption layer... AES-256-GCM detected.\nQuantum key extraction: [████████████████████] Complete\n\nDecryption successful.\n  • Original size: 2.4 GB\n  • Content type: Neural matrix data\n  • Integrity check: PASSED\n  • Timestamp: ${new Date().toISOString()}`,
-
-            'trace': `Tracing signal origin...\n\nHops: 7 | Protocols: QNET → TOR → Mesh\n\n[████████████████████] Complete\n\nTrace Results:\n  • Origin: Sector-9, Node-47\n  • Distance: 2,847 km\n  • Relay nodes: 7\n  • Anonymization: Triple-layer\n  • Confidence: 94.1%\n\nSignal authenticated. Source is friendly.`,
-
-            'deploy': `Deploying neural module update...\n\nModule: NXr-Patch-v3.0.7\nSize: 847 MB\nChanges: 23 improvements, 4 security fixes\n\nBacking up current state...\n[████████████████████] Complete\n\nApplying update...\n[████████████████████] Complete\n\nVerifying integrity... PASSED\nRestarting neural threads... DONE\n\nDeployment successful. All systems upgraded.`
-        };
-
-        // === Message Creation ===
-        function createMessage(text, sender) {
-            const div = document.createElement('div');
-            div.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} msg-animate`;
-
-            if (sender === 'user') {
-                div.innerHTML = `
-                    <div class="max-w-[80%] bg-blue-950/40 border border-blue-500/20 p-4 rounded-2xl rounded-tr-sm">
-                        <p class="text-sm font-mono text-blue-100 leading-relaxed">${escapeHtml(text)}</p>
-                    </div>
-                `;
-            } else {
-                div.innerHTML = `
-                    <div class="max-w-[85%] flex gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-blue-600/15 border border-blue-500/25 flex items-center justify-center shrink-0 mt-1">
-                            <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
-                        </div>
-                        <div class="bg-zinc-900/60 border border-zinc-800/80 p-4 rounded-2xl rounded-tl-sm">
-                            <p class="text-[10px] font-mono text-zinc-600 mb-2 tracking-wider">CORE_OUT &gt;&gt;</p>
-                            <pre class="text-sm leading-relaxed text-zinc-200 whitespace-pre-wrap font-mono">${escapeHtml(text)}</pre>
-                        </div>
-                    </div>
-                `;
+            function step() {
+                if (i < text.length && !currentTypewriter.skipped) {
+                    const burst = Math.min(3, text.length - i);
+                    preEl.textContent += text.substring(i, i + burst);
+                    i += burst;
+                    scrollToBottom();
+                    const d = text[i - 1] === '\n' ? 20 : speed;
+                    if (d === 0) { requestAnimationFrame(step); }
+                    else { setTimeout(step, d); }
+                } else {
+                    if (i < text.length) preEl.textContent = text;
+                    preEl.classList.remove('tw-cursor');
+                    currentTypewriter = null;
+                    resolve();
+                }
             }
-            return div;
-        }
+            if (speed === 0) {
+                preEl.textContent = text;
+                preEl.classList.remove('tw-cursor');
+                currentTypewriter = null;
+                resolve();
+            } else {
+                step();
+            }
+        });
+    }
 
-        function createTypingIndicator() {
-            const div = document.createElement('div');
-            div.className = 'flex justify-start msg-animate';
-            div.id = 'active-typing';
-            div.innerHTML = `
-                <div class="flex gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-blue-600/15 border border-blue-500/25 flex items-center justify-center shrink-0">
-                        <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
-                    </div>
-                    <div class="bg-zinc-900/60 border border-zinc-800/80 px-5 py-4 rounded-2xl rounded-tl-sm">
-                        <div class="typing-indicator">
-                            <span></span><span></span><span></span>
-                        </div>
-                    </div>
+    function skipTypewriter() { if (currentTypewriter && !currentTypewriter.skipped) currentTypewriter.skipped = true; }
+
+    // === Message Creation ===
+    function createUserMessage(text) {
+        const div = document.createElement('div');
+        div.className = 'flex justify-end msg-animate';
+        div.innerHTML = `<div class="max-w-[80%] bg-blue-950/40 border border-blue-500/20 p-4 rounded-md"><p class="text-sm font-mono text-blue-100 leading-relaxed">${escapeHtml(text)}</p></div>`;
+        return div;
+    }
+
+    function createBotMessage(text) {
+        const div = document.createElement('div');
+        div.className = 'flex justify-start msg-animate';
+        div.innerHTML = `
+            <div class="max-w-[85%] flex gap-3">
+                <div class="w-8 h-8 rounded bg-blue-600/15 border border-blue-500/25 flex items-center justify-center shrink-0 mt-1">
+                    <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
                 </div>
-            `;
-            return div;
-        }
+               <div class="bg-zinc-900/60 border border-zinc-800/80 p-4 rounded-md relative bot-msg-wrap" style="min-width:200px">
+                    <button class="copy-btn" onclick="copyMessage(this)">COPY</button>
+                    <p class="text-[10px] font-mono text-zinc-600 mb-2 tracking-wider">CORE_OUT &gt;&gt;</p>
+                    <pre class="text-sm leading-relaxed text-zinc-200 whitespace-pre-wrap font-mono bot-pre"></pre>
+                </div>
+            </div>`;
+        div._botText = text;
+        return div;
+    }
 
-        function escapeHtml(text) {
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
+    function createTypingIndicator() {
+        const div = document.createElement('div');
+        div.className = 'flex justify-start msg-animate'; div.id = 'active-typing';
+        div.innerHTML = `
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded bg-blue-600/15 border border-blue-500/25 flex items-center justify-center shrink-0"><i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i></div>
+                <div class="bg-zinc-900/60 border border-zinc-800/80 px-5 py-4 rounded-md"><div class="typing-indicator"><span></span><span></span><span></span></div></div>
+            </div>`;
+        return div;
+    }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
-        }
-
-        function scrollToBottom() {
-            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-        }
-
-        function hideWelcome() {
-            if (welcomeBanner) welcomeBanner.style.display = 'none';
-        }
-
-        // === Send Handler ===
-        async function handleSend(text) {
-            const msg = (text || userInput.value).trim();
-            if (!msg && selectedFiles.length === 0) return;
-            if (isProcessing) return;
-            isProcessing = true;
-
-            hideWelcome();
-
-            if (selectedFiles.length > 0) {
-                const fileNames = selectedFiles.map(f => f.name).join(', ');
-                const totalSize = selectedFiles.reduce((acc, f) => acc + f.size, 0);
-                const fileMsg = msg ? `${msg}\n\n📎 Files: ${fileNames} (${formatFileSize(totalSize)})` : `📎 File upload: ${fileNames} (${formatFileSize(totalSize)})`;
-                chatFeed.appendChild(createMessage(fileMsg, 'user'));
-                lucide.createIcons();
-                scrollToBottom();
-
-                const loader = createTypingIndicator();
-                chatFeed.appendChild(loader);
-                lucide.createIcons();
-                scrollToBottom();
-
-                await delay(1800 + Math.random() * 1200);
-                loader.remove();
-
-                const response = `FILE UPLOAD COMPLETE\n\nFiles processed: ${selectedFiles.length}\nTotal size: ${formatFileSize(totalSize)}\nEncryption: Quantum-256\nIntegrity: Verified\nStorage: Neural archive Sector-7\n\nFiles: ${fileNames}\n\nRetrieve with: "download [filename]"`;
-                chatFeed.appendChild(createMessage(response, 'bot'));
-                lucide.createIcons();
-                scrollToBottom();
-
-                selectedFiles = [];
-                fileInput.value = '';
-                fileInfo.classList.remove('active');
-                fileBtn.classList.remove('text-blue-400', 'file-uploading');
-
-                if (msg) addToHistory(msg);
-                isProcessing = false;
-                return;
-            }
-
-            addToHistory(msg);
-            chatFeed.appendChild(createMessage(msg, 'user'));
-            lucide.createIcons();
-            userInput.value = '';
-            commandSuggestion.classList.remove('active');
-            sendBtn.disabled = true;
-            scrollToBottom();
-
-            const loader = createTypingIndicator();
-            chatFeed.appendChild(loader);
-            lucide.createIcons();
-            scrollToBottom();
-
-            await delay(1200 + Math.random() * 1500);
-            loader.remove();
-
-            const command = msg.toLowerCase().split(' ')[0];
-            let responseText = responses[command];
-
-            if (!responseText) {
-                const partial = commands.find(c => c.name.startsWith(command) || command.includes(c.name));
-                if (partial) {
-                    responseText = responses[partial.name];
-                } else {
-                    responseText = `Directive "${escapeHtml(command)}" not recognized.\n\nType "help" for available commands.\n\nTip: Commands are case-insensitive. Partial matches are supported.`;
-                }
-            }
-
-            if (Math.random() > 0.6 && command !== 'help') {
-                const extras = [
-                    `\n\nNeural efficiency: +${Math.floor(Math.random() * 8 + 2)}% this cycle.`,
-                    `\n\nQuantum threads rebalanced automatically.`,
-                    `\n\nSyslog updated. Entry #${(10000 + Math.floor(Math.random() * 90000))}.`,
-                    `\n\nBackground scan completed: No anomalies.`,
-                    ''
-                ];
-                responseText += extras[Math.floor(Math.random() * extras.length)];
-            }
-
-            chatFeed.appendChild(createMessage(responseText, 'bot'));
-            lucide.createIcons();
-            scrollToBottom();
-
-            messageCount++;
-            isProcessing = false;
-        }
-
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        function addToHistory(cmd) {
-            commandHistoryArray.unshift(cmd);
-            if (commandHistoryArray.length > 15) commandHistoryArray.pop();
-
-            historyList.innerHTML = '';
-            commandHistoryArray.forEach(c => {
-                const div = document.createElement('div');
-                div.className = 'cursor-pointer hover:text-blue-400 transition-colors py-0.5 px-1 rounded hover:bg-zinc-800/30';
-                div.innerHTML = `<span class="text-zinc-700 mr-1.5">&gt;</span>${escapeHtml(c)}`;
-                div.addEventListener('click', () => {
-                    userInput.value = c;
-                    commandHistory.classList.remove('active');
-                    userInput.focus();
-                    sendBtn.disabled = false;
-                });
-                historyList.appendChild(div);
-            });
-
-            if (sidebarHistory && commandHistoryArray.length > 1) {
-                const item = document.createElement('div');
-                item.className = 'text-[10px] font-mono text-zinc-600 py-1 px-2 rounded border border-transparent hover:border-zinc-800 hover:text-zinc-400 transition-colors cursor-pointer';
-                item.innerHTML = `<span class="text-zinc-700 mr-2">&gt;</span>${escapeHtml(cmd)}`;
-                item.addEventListener('click', () => {
-                    userInput.value = cmd;
-                    userInput.focus();
-                    sendBtn.disabled = false;
-                    closeSidebar();
-                });
-                sidebarHistory.prepend(item);
-                while (sidebarHistory.children.length > 8) {
-                    sidebarHistory.removeChild(sidebarHistory.lastChild);
-                }
-            }
-        }
-
-        // === Input Events ===
-        userInput.addEventListener('input', () => {
-            const value = userInput.value.trim().toLowerCase();
-            sendBtn.disabled = value.length === 0;
-
-            if (value.length > 0) {
-                const filtered = commands.filter(cmd => cmd.name.includes(value));
-                if (filtered.length > 0) {
-                    suggestionList.innerHTML = '';
-                    filtered.forEach(cmd => {
-                        const div = document.createElement('div');
-                        div.className = 'px-3 py-2 hover:bg-zinc-800/60 rounded-md cursor-pointer transition-colors flex justify-between items-center';
-                        div.innerHTML = `<span class="text-blue-400 font-mono">${cmd.name}</span><span class="text-[10px] text-zinc-600">${cmd.desc}</span>`;
-                        div.addEventListener('click', () => {
-                            userInput.value = cmd.name;
-                            commandSuggestion.classList.remove('active');
-                            userInput.focus();
-                            sendBtn.disabled = false;
-                        });
-                        suggestionList.appendChild(div);
-                    });
-                    commandSuggestion.classList.add('active');
-                } else {
-                    commandSuggestion.classList.remove('active');
-                }
-            } else {
-                commandSuggestion.classList.remove('active');
-            }
+    window.copyMessage = function(btn) {
+        const pre = btn.closest('.bot-msg-wrap').querySelector('.bot-pre');
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+            btn.textContent = 'COPIED'; btn.style.color = '#10b981'; btn.style.borderColor = 'rgba(16,185,129,.3)';
+            setTimeout(() => { btn.textContent = 'COPY'; btn.style.color = ''; btn.style.borderColor = ''; }, 1500);
         });
+    };
 
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSend();
-            }
-        });
+    // === Send Handler ===
+    async function handleSend(text) {
+        const msg = (text || userInput.value).trim();
+        if (!msg && selectedFiles.length === 0) return;
+        if (isProcessing) { skipTypewriter(); return; }
+        isProcessing = true; hideWelcome();
 
-        sendBtn.addEventListener('click', () => handleSend());
-
-        document.addEventListener('click', (e) => {
-            if (!userInput.contains(e.target) && !commandSuggestion.contains(e.target)) {
-                commandSuggestion.classList.remove('active');
-            }
-        });
-
-        document.querySelectorAll('.quick-cmd').forEach(btn => {
-            btn.addEventListener('click', () => {
-                handleSend(btn.dataset.cmd);
-            });
-        });
-
-        // === Voice Input ===
-        voiceBtn.addEventListener('click', () => {
-            isVoiceActive = !isVoiceActive;
-
-            if (isVoiceActive) {
-                voiceIndicator.classList.remove('hidden');
-                voiceBtn.classList.add('text-red-500');
-                voiceBtn.classList.remove('text-zinc-600');
-
-                setTimeout(() => {
-                    const options = ['scan network', 'analyze system', 'show status', 'optimize performance', 'run full diagnostics'];
-                    const random = options[Math.floor(Math.random() * options.length)];
-                    userInput.value = random;
-                    sendBtn.disabled = false;
-
-                    voiceIndicator.classList.add('hidden');
-                    voiceBtn.classList.remove('text-red-500');
-                    voiceBtn.classList.add('text-zinc-600');
-                    isVoiceActive = false;
-
-                    handleSend();
-                }, 2000);
-            } else {
-                voiceIndicator.classList.add('hidden');
-                voiceBtn.classList.remove('text-red-500');
-                voiceBtn.classList.add('text-zinc-600');
-            }
-        });
-
-        // === File Upload ===
-        fileInput.addEventListener('change', (e) => {
-            selectedFiles = Array.from(e.target.files);
-
-            if (selectedFiles.length > 0) {
-                fileListEl.innerHTML = '';
-                let totalSize = 0;
-
-                selectedFiles.forEach(file => {
-                    totalSize += file.size;
-                    const div = document.createElement('div');
-                    div.className = 'flex items-center justify-between p-2 bg-zinc-800/40 rounded';
-                    div.innerHTML = `
-                        <div class="flex items-center gap-2 min-w-0">
-                            <i data-lucide="file" class="w-3 h-3 text-blue-400 shrink-0"></i>
-                            <span class="truncate">${escapeHtml(file.name)}</span>
-                        </div>
-                        <span class="text-zinc-500 shrink-0 ml-2">${formatFileSize(file.size)}</span>
-                    `;
-                    fileListEl.appendChild(div);
-                });
-
-                const totalDiv = document.createElement('div');
-                totalDiv.className = 'mt-2 pt-2 border-t border-zinc-700/50 flex justify-between text-[10px]';
-                totalDiv.innerHTML = `
-                    <span class="text-zinc-500">${selectedFiles.length} file(s)</span>
-                    <span class="text-blue-400">${formatFileSize(totalSize)}</span>
-                `;
-                fileListEl.appendChild(totalDiv);
-
-                fileInfo.classList.add('active');
-                fileBtn.classList.add('text-blue-400', 'file-uploading');
-                lucide.createIcons();
-            }
-        });
-
-        clearFilesBtn.addEventListener('click', () => {
-            selectedFiles = [];
-            fileInput.value = '';
-            fileInfo.classList.remove('active');
+        if (selectedFiles.length > 0) {
+            const fileNames = selectedFiles.map(f => f.name).join(', ');
+            const totalSize = selectedFiles.reduce((a, f) => a + f.size, 0);
+            const fileMsg = msg ? `${msg}\n\n📎 Files: ${fileNames} (${formatSize(totalSize)})` : `📎 File upload: ${fileNames} (${formatSize(totalSize)})`;
+            chatFeed.appendChild(createUserMessage(fileMsg)); refreshIcons(); scrollToBottom();
+            const loader = createTypingIndicator(); chatFeed.appendChild(loader); refreshIcons(); scrollToBottom();
+            await delay(1500 + Math.random() * 1000); loader.remove();
+            const resp = `FILE UPLOAD COMPLETE\n\nFiles processed: ${selectedFiles.length}\nTotal size: ${formatSize(totalSize)}\nEncryption: Quantum-256\nIntegrity: Verified\nStorage: Neural archive Sector-7\n\nFiles: ${fileNames}\n\nRetrieve with: "download [filename]"`;
+            const botDiv = createBotMessage(resp); chatFeed.appendChild(botDiv); refreshIcons(); scrollToBottom();
+            await typewriterEffect(botDiv.querySelector('.bot-pre'), resp);
+            selectedFiles = []; fileInput.value = ''; fileInfo.classList.remove('active');
             fileBtn.classList.remove('text-blue-400', 'file-uploading');
-        });
-
-        // === Command History Toggle ===
-        commandHistoryBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            commandHistory.classList.toggle('active');
-        });
-
-        // === Sound Toggle ===
-        soundToggle.addEventListener('click', () => {
-            soundEnabled = !soundEnabled;
-            const icon = soundToggle.querySelector('i');
-            icon.setAttribute('data-lucide', soundEnabled ? 'volume-2' : 'volume-x');
-            lucide.createIcons();
-        });
-
-        // === Clear Chat ===
-        clearChatBtn.addEventListener('click', () => {
-            if (isProcessing) return;
-            chatFeed.innerHTML = '';
-            messageCount = 0;
-            if (welcomeBanner) {
-                chatFeed.appendChild(welcomeBanner);
-                welcomeBanner.style.display = '';
-            }
-            lucide.createIcons();
-        });
-
-        // === Mobile Sidebar ===
-        function openSidebar() {
-            sidebar.classList.add('open');
-            sidebar.classList.remove('hidden');
-            sidebar.classList.add('flex');
-            sidebarOverlay.classList.add('visible');
+            if (msg) addToHistory(msg); isProcessing = false; return;
         }
 
-        function closeSidebar() {
-            sidebar.classList.remove('open');
-            sidebarOverlay.classList.remove('visible');
-            if (window.innerWidth < 1280) {
-                sidebar.classList.add('hidden');
-                sidebar.classList.remove('flex');
-            }
+        addToHistory(msg); historyIndex = -1;
+        chatFeed.appendChild(createUserMessage(msg)); refreshIcons();
+        userInput.value = ''; commandSuggestion.classList.remove('active'); sendBtn.disabled = true; scrollToBottom();
+        const loader = createTypingIndicator(); chatFeed.appendChild(loader); refreshIcons(); scrollToBottom();
+        await delay(800 + Math.random() * 1000); loader.remove();
+
+        const command = msg.toLowerCase().split(' ')[0];
+        let responseText = responses[command];
+        if (!responseText) {
+            const partial = commands.find(c => c.name.startsWith(command) || command.includes(c.name));
+            responseText = partial ? responses[partial.name] : `Directive "${escapeHtml(command)}" not recognized.\n\nType "help" for available commands.\n\nTip: Commands are case-insensitive. Partial matches supported.`;
+        }
+        if (Math.random() > .6 && command !== 'help') {
+            const extras = [`\n\nNeural efficiency: +${Math.floor(Math.random() * 8 + 2)}% this cycle.`, `\n\nQuantum threads rebalanced automatically.`, `\n\nSyslog updated. Entry #${(10000 + Math.floor(Math.random() * 90000))}.`, `\n\nBackground scan completed: No anomalies.`, ''];
+            responseText += extras[Math.floor(Math.random() * extras.length)];
         }
 
-        menuToggle.addEventListener('click', openSidebar);
-        sidebarOverlay.addEventListener('click', closeSidebar);
+        const botDiv = createBotMessage(responseText); chatFeed.appendChild(botDiv); refreshIcons(); scrollToBottom();
+        await typewriterEffect(botDiv.querySelector('.bot-pre'), responseText); scrollToBottom();
+        msgCount++; isProcessing = false;
+    }
 
-        // === Focus input on load ===
-        userInput.focus();
+    function refreshIcons() { lucide.createIcons(); }
+
+    function addToHistory(cmd) {
+        cmdHistory.unshift(cmd); if (cmdHistory.length > 30) cmdHistory.pop();
+        if (historyPanel.classList.contains('open')) renderHistoryPanel();
+    }
+
+    // === Input Events ===
+    userInput.addEventListener('input', () => {
+        const v = userInput.value.trim().toLowerCase();
+        sendBtn.disabled = v.length === 0 && selectedFiles.length === 0;
+        if (v.length > 0) {
+            const filtered = commands.filter(c => c.name.includes(v));
+            if (filtered.length > 0) {
+                suggestionList.innerHTML = '';
+                filtered.forEach(cmd => {
+                    const div = document.createElement('div');
+                    div.className = 'px-3 py-2 hover:bg-zinc-800/60 rounded-md cursor-pointer transition-colors flex justify-between items-center';
+                    div.innerHTML = `<span class="text-blue-400 font-mono">${cmd.name}</span><span class="text-[10px] text-zinc-600 ml-4">${cmd.desc}</span>`;
+                    div.addEventListener('click', () => { userInput.value = cmd.name; commandSuggestion.classList.remove('active'); userInput.focus(); sendBtn.disabled = false; });
+                    suggestionList.appendChild(div);
+                });
+                commandSuggestion.classList.add('active');
+            } else { commandSuggestion.classList.remove('active'); }
+        } else { commandSuggestion.classList.remove('active'); }
+    });
+
+    userInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); handleSend(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); if (cmdHistory.length > 0 && historyIndex < cmdHistory.length - 1) { historyIndex++; userInput.value = cmdHistory[historyIndex]; sendBtn.disabled = false; } }
+        else if (e.key === 'ArrowDown') { e.preventDefault(); if (historyIndex > 0) { historyIndex--; userInput.value = cmdHistory[historyIndex]; } else { historyIndex = -1; userInput.value = ''; sendBtn.disabled = true; } }
+        else if (e.key === 'Escape') { commandSuggestion.classList.remove('active'); closeSidebar(); closeSettings(); closeHistoryPanel(); }
+    });
+
+    sendBtn.addEventListener('click', () => handleSend());
+
+    document.addEventListener('click', e => {
+        if (!userInput.contains(e.target) && !commandSuggestion.contains(e.target)) commandSuggestion.classList.remove('active');
+        // Close history panel if clicking outside
+        if (!historyPanel.contains(e.target) && !historyToggleBtn.contains(e.target)) {
+            closeHistoryPanel();
+        }
+    });
+
+    document.querySelectorAll('.quick-cmd').forEach(btn => btn.addEventListener('click', () => handleSend(btn.dataset.cmd)));
+
+    // === Voice Input ===
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition(); recognition.continuous = false; recognition.interimResults = true; recognition.lang = 'en-US';
+        recognition.onresult = e => {
+            let transcript = ''; for (let i = e.resultIndex; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+            userInput.value = transcript; sendBtn.disabled = transcript.length === 0;
+            voiceStatusText.textContent = e.results[0].isFinal ? 'Recognized!' : 'Hearing...';
+        };
+        recognition.onend = () => {
+            isVoiceActive = false; voiceIndicator.classList.add('hidden'); voiceBtn.classList.remove('text-red-500'); voiceBtn.classList.add('text-zinc-600'); voiceStatusText.textContent = 'Listening...';
+            if (userInput.value.trim()) setTimeout(() => handleSend(), 300);
+        };
+        recognition.onerror = () => {
+            isVoiceActive = false; voiceIndicator.classList.add('hidden'); voiceBtn.classList.remove('text-red-500'); voiceBtn.classList.add('text-zinc-600');
+            showToast('Voice recognition unavailable', 'warning');
+        };
+    }
+
+    voiceBtn.addEventListener('click', () => {
+        isVoiceActive = !isVoiceActive;
+        if (isVoiceActive) {
+            voiceIndicator.classList.remove('hidden'); voiceBtn.classList.add('text-red-500'); voiceBtn.classList.remove('text-zinc-600');
+            if (recognition) { try { recognition.start(); } catch(e) {} }
+            else {
+                voiceStatusText.textContent = 'Listening...';
+                setTimeout(() => {
+                    const opts = ['scan network', 'analyze system', 'show status', 'optimize performance', 'run full diagnostics'];
+                    userInput.value = opts[Math.floor(Math.random() * opts.length)]; sendBtn.disabled = false;
+                    voiceIndicator.classList.add('hidden'); voiceBtn.classList.remove('text-red-500'); voiceBtn.classList.add('text-zinc-600'); isVoiceActive = false; handleSend();
+                }, 2000);
+            }
+        } else {
+            if (recognition) recognition.stop();
+            voiceIndicator.classList.add('hidden'); voiceBtn.classList.remove('text-red-500'); voiceBtn.classList.add('text-zinc-600');
+        }
+    });
+
+    // === File Upload ===
+    fileInput.addEventListener('change', e => {
+        selectedFiles = Array.from(e.target.files);
+        if (selectedFiles.length > 0) {
+            fileListEl.innerHTML = ''; let totalSize = 0;
+            selectedFiles.forEach(file => {
+                totalSize += file.size;
+                const div = document.createElement('div'); div.className = 'flex items-center justify-between p-2 bg-zinc-800/40 rounded';
+                div.innerHTML = `<div class="flex items-center gap-2 min-w-0"><i data-lucide="file" class="w-3 h-3 text-blue-400 shrink-0"></i><span class="truncate">${escapeHtml(file.name)}</span></div><span class="text-zinc-500 shrink-0 ml-2">${formatSize(file.size)}</span>`;
+                fileListEl.appendChild(div);
+            });
+            const totalDiv = document.createElement('div'); totalDiv.className = 'mt-2 pt-2 border-t border-zinc-700/50 flex justify-between text-[10px]';
+            totalDiv.innerHTML = `<span class="text-zinc-500">${selectedFiles.length} file(s)</span><span class="text-blue-400">${formatSize(totalSize)}</span>`;
+            fileListEl.appendChild(totalDiv); fileInfo.classList.add('active'); fileBtn.classList.add('text-blue-400', 'file-uploading'); sendBtn.disabled = false; refreshIcons();
+            showToast(`${selectedFiles.length} file(s) attached`, 'info');
+        }
+    });
+
+    clearFilesBtn.addEventListener('click', () => { selectedFiles = []; fileInput.value = ''; fileInfo.classList.remove('active'); fileBtn.classList.remove('text-blue-400', 'file-uploading'); });
+
+    soundToggle.addEventListener('click', () => {
+        soundEnabled = !soundEnabled; const icon = soundToggle.querySelector('i'); icon.setAttribute('data-lucide', soundEnabled ? 'volume-2' : 'volume-x'); refreshIcons();
+        showToast(soundEnabled ? 'Sound enabled' : 'Sound muted', 'info', 2000);
+    });
+
+    clearChatBtn.addEventListener('click', () => {
+        if (isProcessing || msgCount === 0) return;
+        chatFeed.innerHTML = ''; msgCount = 0;
+        if (welcomeBanner) { chatFeed.appendChild(welcomeBanner); welcomeBanner.style.display = ''; }
+        refreshIcons(); showToast('Chat history cleared', 'success', 2500);
+    });
+
+    document.querySelectorAll('.neural-module').forEach(mod => {
+        mod.addEventListener('click', () => {
+            const info = { synapse: { label: 'Synapse Boost', status: 'Active — Neural acceleration +34%' }, quantum: { label: 'Quantum Lock', status: 'Engaged — Encryption layer 7/7' }, memory: { label: 'Memory Core', status: 'Online — 847 TB allocated' }, neurolink: { label: 'Neuro-Link', status: 'Connected — Latency 2.1ms' } }[mod.dataset.module];
+            if (info) showToast(`${info.label}: ${info.status}`, 'info', 3000);
+        });
+    });
+
+    function openSidebar() { sidebar.classList.add('open'); sidebar.classList.remove('hidden'); sidebar.classList.add('flex'); sidebarOverlay.classList.add('visible'); }
+    function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('visible'); if (window.innerWidth < 1280) { sidebar.classList.add('hidden'); sidebar.classList.remove('flex'); } }
+    menuToggle.addEventListener('click', openSidebar); sidebarOverlay.addEventListener('click', closeSidebar);
+
+    chatContainer.addEventListener('click', e => { if (e.target.closest('.bot-msg-wrap')) skipTypewriter(); });
+    setTimeout(() => userInput.focus(), 3500);
     </script>
 </body>
 </html>
