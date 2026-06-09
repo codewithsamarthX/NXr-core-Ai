@@ -279,7 +279,7 @@
 
         <div class="p-6 border-t border-zinc-800/50 mt-auto">
             <div class="glass-panel-solid rounded-lg p-3 text-center">
-                <p class="text-[9px] text-zinc-500 font-mono tracking-widest">NXr CORE v3.0.7 BUILD 847</p>
+                <p class="text-[9px] text-zinc-500 font-mono tracking-widest">NXr CORE v5.0.7 BUILD 847</p>
             </div>
         </div>
     </div>
@@ -302,7 +302,13 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Sidebar -->
-    <aside class="sidebar-panel w-80 border-r border-cyan-500/20 bg-black/40 backdrop-blur-2xl p-6 hidden xl:flex flex-col z-20 glass" id="sidebar">
+    <aside class="sidebar-panel w-80 border-r border-cyan-500/20 bg-black/40 backdrop-blur-2xl p-6 hidden xl:flex flex-col z-20 glass relative" id="sidebar">
+        
+        <!-- Close button for mobile (hidden on desktop) -->
+        <button id="close-sidebar-btn" class="xl:hidden absolute top-4 right-4 text-zinc-400 hover:text-red-400 transition-colors p-1 z-50" aria-label="Close sidebar">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+
         <div class="flex items-center gap-3 mb-8 group cursor-pointer">
             <div class="p-3 bg-blue-600/20 rounded-xl border border-blue-500/40 core-pulse">
                 <div class="relative w-14 h-14 flex items-center justify-center">
@@ -525,6 +531,7 @@
     const fileListEl = $('file-list'), clearFilesBtn = $('clear-files');
     const clearChatBtn = $('clear-chat-btn'), welcomeBanner = $('welcome-banner');
     const sidebar = $('sidebar'), sidebarOverlay = $('sidebarOverlay'), menuToggle = $('menuToggle');
+    const closeSidebarBtn = $('close-sidebar-btn');
     const welcomeTitle = $('welcome-title');
     const sysClock = $('sys-clock'), voiceStatusText = $('voice-status-text');
     const particlesCanvas = $('particles-canvas'), pCtx = particlesCanvas.getContext('2d');
@@ -571,7 +578,7 @@
 
     // === Welcome Title Typing ===
     function typeWelcomeTitle() {
-        const text = '> NXr_CORE :: ONLINE';
+        const text = '> NXr_CORE :: ACT';
         let i = 0;
         welcomeTitle.textContent = '';
         function type() {
@@ -648,7 +655,6 @@
         historyToggleBtn.classList.remove('active');
     }
 
-    // FIX: Added e.stopPropagation() to prevent the global click listener from interfering
     historyToggleBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         toggleHistoryPanel();
@@ -1017,7 +1023,6 @@
 
     document.addEventListener('click', e => {
         if (!userInput.contains(e.target) && !commandSuggestion.contains(e.target)) commandSuggestion.classList.remove('active');
-        // Close history panel if clicking outside
         if (!historyPanel.contains(e.target) && !historyToggleBtn.contains(e.target)) {
             closeHistoryPanel();
         }
@@ -1105,7 +1110,10 @@
 
     function openSidebar() { sidebar.classList.add('open'); sidebar.classList.remove('hidden'); sidebar.classList.add('flex'); sidebarOverlay.classList.add('visible'); }
     function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('visible'); if (window.innerWidth < 1280) { sidebar.classList.add('hidden'); sidebar.classList.remove('flex'); } }
-    menuToggle.addEventListener('click', openSidebar); sidebarOverlay.addEventListener('click', closeSidebar);
+    
+    menuToggle.addEventListener('click', openSidebar); 
+    sidebarOverlay.addEventListener('click', closeSidebar); // Global click overlay to close
+    closeSidebarBtn.addEventListener('click', closeSidebar); // Dedicated close button
 
     chatContainer.addEventListener('click', e => { if (e.target.closest('.bot-msg-wrap')) skipTypewriter(); });
     setTimeout(() => userInput.focus(), 3500);
